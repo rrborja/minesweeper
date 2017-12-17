@@ -31,12 +31,13 @@ type Board struct {
 
 type game struct {
 	Board
+	Difficulty
 }
 
 type Minesweeper interface {
 	SetGrid(uint, uint) error
 
-	SetDifficulty(Difficulty) error
+	SetDifficulty(Difficulty)
 
 	Play() error
 
@@ -65,8 +66,8 @@ func (game *game) Flag(x, y uint) error {
 	return nil
 }
 
-func (game *game) SetDifficulty(difficulty Difficulty) error {
-	return nil
+func (game *game) SetDifficulty(difficulty Difficulty) {
+	game.Difficulty = difficulty
 }
 
 func (game *game) Play() error {

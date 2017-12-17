@@ -52,3 +52,9 @@ func TestFlaggedBlock(t *testing.T) {
 	minesweeper.Flag(3, 6)
 	assert.Equal(t, minesweeper.(*game).Blocks[3][6].Node, FLAGGED)
 }
+
+func TestGame_SetDifficulty(t *testing.T) {
+	minesweeper := newSampleGame()
+	minesweeper.SetDifficulty(EASY)
+	assert.Equal(t, minesweeper.(*game).Difficulty, EASY)
+}
