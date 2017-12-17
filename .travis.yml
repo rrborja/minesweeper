@@ -1,0 +1,24 @@
+language: go
+
+sudo: false
+
+go:
+- 1.x
+- tip
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - go: tip
+
+before_install:
+- go get golang.org/x/tools/cmd/cover
+- go get github.com/wadey/gocovmerge
+- go get github.com/mattn/goveralls
+
+script:
+- go test . -v -covermode=count -coverprofile=coverage.out
+
+after_success:
+- gocovmerge *.out */*.out > merged.coverage.out
+- $HOME/gopath/bin/goveralls -coverprofile merged.coverage.out -service=travis-ci
