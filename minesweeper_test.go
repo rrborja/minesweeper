@@ -3,6 +3,9 @@ package minesweeper
 import (
 "testing"
 "github.com/stretchr/testify/assert"
+	"fmt"
+	"math/rand"
+	"time"
 )
 
 const (
@@ -57,4 +60,27 @@ func TestGame_SetDifficulty(t *testing.T) {
 	minesweeper := newSampleGame()
 	minesweeper.SetDifficulty(EASY)
 	assert.Equal(t, minesweeper.(*game).Difficulty, EASY)
+}
+
+func TestBombsInPlace(t *testing.T) {
+
+	minesweeper := newSampleGame()
+	minesweeper.SetDifficulty(EASY)
+	minesweeper.Play()
+
+	game := minesweeper.(*game)
+	rand.Seed(time.Now().Unix())
+
+	numOfBombs := int(float32(game.width * game.height) * EASY_MULTIPLIER)
+	countedBombs := 0
+	for _, row := range game.Blocks {
+		fmt.Println()
+		for _, block := range row {
+			fmt.Print(block.Node)
+			if block.Node == BOMB {
+				countedBombs ++
+			}
+		}
+	}
+	assert.Equal(t, numOfBombs, countedBombs)
 }

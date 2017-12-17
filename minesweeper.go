@@ -1,8 +1,13 @@
 package minesweeper
 
+import (
+	"math/rand"
+	"time"
+)
+
 type Node uint8
 type Blocks [][]Block
-type Grid struct {width, height uint}
+type Grid struct {width, height int}
 
 type Difficulty uint8
 
@@ -20,6 +25,11 @@ const (
 	HARD
 )
 
+const CONSECUTIVE_RANDOM_LIMIT = 3
+const EASY_MULTIPLIER = 0.2
+const MEDIUM_MULTIPLIER = 0.4
+const HARD_MULTIPLIER = 0.6
+
 type Block struct {
 	Node
 }
@@ -27,6 +37,7 @@ type Block struct {
 type Board struct {
 	*Grid
 	Blocks
+	difficultyMultiplier float32
 }
 
 type game struct {
@@ -35,13 +46,13 @@ type game struct {
 }
 
 type Minesweeper interface {
-	SetGrid(uint, uint) error
+	SetGrid(int, int) error
 
 	SetDifficulty(Difficulty)
 
 	Play() error
 
-	Flag(uint, uint) error
+	Flag(int, int) error
 }
 
 func NewGame(grid ...Grid) Minesweeper {
@@ -52,7 +63,7 @@ func NewGame(grid ...Grid) Minesweeper {
 	return game
 }
 
-func (game *game) SetGrid(width, height uint) error {
+func (game *game) SetGrid(width, height int) error {
 	if game.Grid != nil {
 		return new(GameAlreadyStarted)
 	}
@@ -61,21 +72,63 @@ func (game *game) SetGrid(width, height uint) error {
 	return nil
 }
 
-func (game *game) Flag(x, y uint) error {
+func (game *game) Flag(x, y int) error {
 	game.Blocks[x][y].Node = FLAGGED
 	return nil
 }
 
 func (game *game) SetDifficulty(difficulty Difficulty) {
 	game.Difficulty = difficulty
+	switch difficulty {
+	case EASY:
+		game.difficultyMultiplier = EASY_MULTIPLIER
+	case MEDIUM:
+		game.difficultyMultiplier = MEDIUM_MULTIPLIER
+	case HARD:
+		game.difficultyMultiplier = HARD_MULTIPLIER
+	}
 }
 
 func (game *game) Play() error {
+	createBombs(game)
 	return nil
 }
 
 func (block *Block) SetBlock(node Node) {
 	block.Node = node
+}
+
+// Shifts to the right
+func shiftPosition(grid *Grid, x, y int) (_x, _y int){
+	width := grid.width
+	height := grid.height
+	if x + 1 > width {
+		if y + 1 > height {
+			_x, _y = 0, 0
+		} else {
+			_x, _y = 0, y + 1
+		}
+	} else {
+		_x, _y = x + 1, y
+	}
+	return
+}
+
+func createBombs(game *game) {
+	rand.Seed(time.Now().Unix())
+	area := int(game.width * game.height)
+	for i := 0; i < int(float32(area) * game.difficultyMultiplier); i++ {
+		randomPos := rand.Intn(area)
+		x, y := randomPos%game.width, randomPos/game.height
+
+		countLimit := 0
+		for game.Board.Blocks[x][y].Node != UNKNOWN && countLimit < CONSECUTIVE_RANDOM_LIMIT {
+			x, y = shiftPosition(game.Grid, x, y)
+			countLimit ++
+		}
+
+		game.Blocks[x][y].Node = BOMB
+	}
 }
 
 func createBoard(game *game) {
