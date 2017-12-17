@@ -16,7 +16,7 @@ type Block struct {
 }
 
 type Board struct {
-	Grid
+	*Grid
 	Blocks
 }
 
@@ -25,20 +25,29 @@ type game struct {
 }
 
 type Minesweeper interface {
-	SetGrid(int, int) *game
+	SetGrid(int, int) error
 
 }
 
-func NewGame() Minesweeper {
-	return new(game)
-}
-
-func (game *game) SetGrid(width, height int) *game {
-	game.Grid = Grid{width, height}
+func NewGame(grid ...Grid) Minesweeper {
+	game := new(game)
+	if len(grid) > 0 {
+		game.Grid = &grid[0]
+	}
 	return game
+}
+
+func (game *game) SetGrid(width, height int) error {
+	if game.Grid != nil {
+		return new(GameAlreadyStarted)
+	}
+	game.Grid = &Grid{width, height}
+	return nil
 }
 
 func (block *Block) SetBlock(node Node) {
 	block.Node = node
 }
+
+
 

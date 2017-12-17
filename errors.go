@@ -1,9 +1,17 @@
 package minesweeper
 
-type Exploded struct {
-	error string
+type Exploded struct {}
+
+func (Exploded *Exploded) Error() string {
+	return "Game over"
 }
 
-func (exploded *Exploded) Error() string {
-	return exploded.error
+type GameAlreadyStarted struct {}
+
+func (GameAlreadyStarted *GameAlreadyStarted) String() string {
+	return "Game already started. Try setting a new board."
+}
+
+func (GameAlreadyStarted *GameAlreadyStarted) Error() string {
+	return GameAlreadyStarted.String()
 }
