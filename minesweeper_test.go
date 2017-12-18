@@ -8,7 +8,7 @@ import (
 
 const (
 	SAMPLE_GRID_WIDTH = 10
-	SAMPLE_GRID_HEIGHT = 20
+	SAMPLE_GRID_HEIGHT = 40
 )
 
 func newBlankGame() Minesweeper {
@@ -44,6 +44,7 @@ func TestGameWithGridArgument(t *testing.T) {
 func TestNewGridWhenStartedGame(t *testing.T) {
 	minesweeper := newSampleGame()
 	err := minesweeper.SetGrid(10, 20)
+	assert.Error(t, err)
 	assert.NotNil(t, err, "Must report an error upon setting a new grid from an already started game")
 	assert.IsType(t, new(GameAlreadyStarted), err, "The error must be GameAlreadyStarted error type")
 }
@@ -51,7 +52,7 @@ func TestNewGridWhenStartedGame(t *testing.T) {
 func TestFlaggedBlock(t *testing.T) {
 	minesweeper := newSampleGame()
 	minesweeper.Flag(3, 6)
-	assert.Equal(t, minesweeper.(*game).Blocks[3][6].Node, FLAGGED)
+	assert.Equal(t, minesweeper.(*game).Blocks[3][6].flagged, true)
 }
 
 func TestGame_SetDifficulty(t *testing.T) {
@@ -146,6 +147,71 @@ func TestTalliedBomb(t *testing.T) {
 				count(game.Blocks, x + 1, y		) +
 				count(game.Blocks, x + 1, y + 1	)
 				assert.Equal(t, counted, block.value)
+			}
+		}
+	}
+}
+
+func TestVisitedBlock(t *testing.T) {
+	minesweeper := newSampleGame()
+	minesweeper.SetDifficulty(EASY)
+	minesweeper.Play()
+
+	game := minesweeper.(*game)
+
+	for x, row := range game.Blocks {
+		for y, block := range row {
+			if block.Node == NUMBER {
+				game.Visit(x, y)
+				assert.True(t, game.Blocks[x][y].visited)
+			}
+		}
+	}
+
+}
+
+func TestVisitedBombToGameOver(t *testing.T) {
+	minesweeper := newSampleGame()
+	minesweeper.SetDifficulty(EASY)
+	minesweeper.Play()
+
+	game := minesweeper.(*game)
+	var x, y int
+	var err error
+
+	for i, row := range game.Blocks {
+		for j, block := range row {
+			if block.Node == BOMB {
+				x, y = i, j
+				err = game.Visit(x, y)
+				assert.Error(t, err)
+				assert.NotNil(t, err)
+				assert.IsType(t, new(Exploded), err)
+			}
+		}
+	}
+
+}
+
+func TestVisitedUnmarkedBlockDistributeVisit(t *testing.T) {
+	minesweeper := newSampleGame()
+	minesweeper.SetDifficulty(EASY)
+	minesweeper.Play()
+
+	game := minesweeper.(*game)
+
+	for x, row := range game.Blocks {
+		for y, block := range row {
+			if block.Node == UNKNOWN && !block.visited {
+				minesweeper.Visit(x, y)
+			}
+		}
+	}
+
+	for _, row := range game.Blocks {
+		for _, block := range row {
+			if block.Node == UNKNOWN {
+				assert.True(t, block.visited)
 			}
 		}
 	}

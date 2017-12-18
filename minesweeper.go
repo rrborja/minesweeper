@@ -15,7 +15,6 @@ const (
 	UNKNOWN Node = 1 << iota >> 1
 	BOMB
 	NUMBER
-	FLAGGED
 )
 
 const (
@@ -33,6 +32,7 @@ const HARD_MULTIPLIER = 0.5
 type Block struct {
 	Node
 	value int
+	visited, flagged bool
 }
 
 type Board struct {
@@ -53,7 +53,9 @@ type Minesweeper interface {
 
 	Play() error
 
-	Flag(int, int) error
+	Flag(int, int)
+
+	Visit(int, int) error
 }
 
 func NewGame(grid ...Grid) Minesweeper {
@@ -73,8 +75,19 @@ func (game *game) SetGrid(width, height int) error {
 	return nil
 }
 
-func (game *game) Flag(x, y int) error {
-	game.Blocks[x][y].Node = FLAGGED
+func (game *game) Flag(x, y int) {
+	game.Blocks[x][y].flagged = true
+}
+
+func (game *game) Visit(x, y int) error {
+	game.Blocks[x][y].visited = true
+	switch game.Blocks[x][y].Node {
+	case BOMB:
+		return new(Exploded)
+	case UNKNOWN:
+		game.Blocks[x][y].visited = false //to avoid infinite recursion, first is to set the base case
+		autoRevealUnmarkedBlock(game, x, y)
+	}
 	return nil
 }
 
@@ -144,7 +157,7 @@ func tallyHints(game *game) {
 	tally := func(blocks Blocks, x, y int) {
 		if x >= 0 && y >= 0 &&
 			x < width && y < height &&
-			blocks[x][y].Node & BOMB == 0 {
+			blocks[x][y].Node != BOMB {
 			blocks[x][y].Node = NUMBER
 			blocks[x][y].value ++
 		}
@@ -170,6 +183,32 @@ func createBoard(game *game) {
 	game.Blocks = make([][]Block, game.width)
 	for x := range game.Blocks {
 		game.Blocks[x] = make([]Block, game.height)
+	}
+}
+
+func autoRevealUnmarkedBlock(game *game, x, y int) {
+	blocks := game.Blocks
+	width := game.width
+	height := game.height
+
+	if x >= 0 && y >= 0 && x < width && y < height {
+		if blocks[x][y].visited {
+			return
+		}
+		if blocks[x][y].Node == UNKNOWN {
+			blocks[x][y].visited = true
+
+			autoRevealUnmarkedBlock(game, x-1, y-1)
+			autoRevealUnmarkedBlock(game, x-1, y)
+			autoRevealUnmarkedBlock(game, x-1, y+1)
+			autoRevealUnmarkedBlock(game, x, y-1)
+			autoRevealUnmarkedBlock(game, x, y+1)
+			autoRevealUnmarkedBlock(game, x+1, y-1)
+			autoRevealUnmarkedBlock(game, x+1, y)
+			autoRevealUnmarkedBlock(game, x+1, y+1)
+		} else if blocks[x][y].Node == NUMBER {
+			blocks[x][y].visited = true
+		}
 	}
 }
 
