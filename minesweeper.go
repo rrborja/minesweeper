@@ -12,7 +12,7 @@ type Grid struct {width, height int}
 type Difficulty uint8
 
 const (
-	UNKNOWN Node = iota
+	UNKNOWN Node = 1 << iota >> 1
 	BOMB
 	NUMBER
 	FLAGGED
@@ -26,12 +26,13 @@ const (
 )
 
 const CONSECUTIVE_RANDOM_LIMIT = 3
-const EASY_MULTIPLIER = 0.2
-const MEDIUM_MULTIPLIER = 0.4
-const HARD_MULTIPLIER = 0.6
+const EASY_MULTIPLIER = 0.1
+const MEDIUM_MULTIPLIER = 0.2
+const HARD_MULTIPLIER = 0.5
 
 type Block struct {
 	Node
+	value int
 }
 
 type Board struct {
@@ -91,6 +92,7 @@ func (game *game) SetDifficulty(difficulty Difficulty) {
 
 func (game *game) Play() error {
 	createBombs(game)
+	tallyHints(game)
 	return nil
 }
 
@@ -135,6 +137,35 @@ func createBombs(game *game) {
 	}
 }
 
+func tallyHints(game *game) {
+	width := game.width
+	height := game.height
+
+	tally := func(blocks Blocks, x, y int) {
+		if x >= 0 && y >= 0 &&
+			x < width && y < height &&
+			blocks[x][y].Node & BOMB == 0 {
+			blocks[x][y].Node = NUMBER
+			blocks[x][y].value ++
+		}
+	}
+
+	for x, row := range game.Blocks {
+		for y, block := range row {
+			if block.Node == BOMB {
+				tally(game.Blocks, x - 1, y - 1	)
+				tally(game.Blocks, x - 1, y		)
+				tally(game.Blocks, x - 1, y + 1	)
+				tally(game.Blocks, x	, y - 1	)
+				tally(game.Blocks, x	, y + 1	)
+				tally(game.Blocks, x + 1, y - 1	)
+				tally(game.Blocks, x + 1, y		)
+				tally(game.Blocks, x + 1, y + 1	)
+			}
+		}
+	}
+}
+
 func createBoard(game *game) {
 	game.Blocks = make([][]Block, game.width)
 	for x := range game.Blocks {
@@ -143,7 +174,7 @@ func createBoard(game *game) {
 }
 
 func randomNumber(max int) int {
-	var n uint16
-	binary.Read(rand.Reader, binary.LittleEndian, &n)
-	return int(n) % max
+	var number uint16
+	binary.Read(rand.Reader, binary.LittleEndian, &number)
+	return int(number) % max
 }

@@ -3,11 +3,12 @@ package minesweeper
 import (
 	"testing"
 	"github.com/stretchr/testify/assert"
+	"fmt"
 )
 
 const (
-	SAMPLE_GRID_WIDTH = 50
-	SAMPLE_GRID_HEIGHT = 100
+	SAMPLE_GRID_WIDTH = 10
+	SAMPLE_GRID_HEIGHT = 20
 )
 
 func newBlankGame() Minesweeper {
@@ -83,4 +84,84 @@ func TestBombsInPlace(t *testing.T) {
 		}
 	}
 	assert.Equal(t, numOfBombs, countedBombs)
+}
+
+func TestTalliedBomb(t *testing.T) {
+	minesweeper := newSampleGame()
+	minesweeper.SetDifficulty(EASY)
+	minesweeper.Play()
+
+	game := minesweeper.(*game)
+	width := game.width
+	height := game.height
+
+	count := func(blocks Blocks, x, y int) (has int) {
+		if x >= 0 && y >= 0 &&
+			x < width && y < height &&
+				blocks[x][y].Node & BOMB == 1 {
+					return 1
+		}
+		return
+	}
+
+	hasSurroundingTally := func(blocks Blocks, x, y int) int {
+		if x >= 0 && y >= 0 &&
+			x < width && y < height {
+				switch blocks[x][y].Node {
+				case NUMBER:
+					return 1
+				case BOMB:
+					return -1
+				default:
+					return 0
+				}
+		}
+		return -1
+	}
+	for x, row := range game.Blocks {
+		for y, block := range row {
+			if block.Node == BOMB {
+				assert.NotEqual(t, 0, hasSurroundingTally(game.Blocks, x-1, y-1))
+				assert.NotEqual(t, 0, hasSurroundingTally(game.Blocks, x-1, y))
+				assert.NotEqual(t, 0, hasSurroundingTally(game.Blocks, x-1, y+1))
+				assert.NotEqual(t, 0, hasSurroundingTally(game.Blocks, x, y-1))
+				assert.NotEqual(t, 0, hasSurroundingTally(game.Blocks, x, y+1))
+				assert.NotEqual(t, 0, hasSurroundingTally(game.Blocks, x+1, y-1))
+				assert.NotEqual(t, 0, hasSurroundingTally(game.Blocks, x+1, y))
+				assert.NotEqual(t, 0, hasSurroundingTally(game.Blocks, x+1, y+1))
+			}
+		}
+	}
+
+	for x, row := range game.Blocks {
+		for y, block := range row {
+			if block.Node == NUMBER {
+				var counted int
+				counted = count(game.Blocks, x - 1, y - 1	) +
+				count(game.Blocks, x - 1, y		) +
+				count(game.Blocks, x - 1, y + 1	) +
+				count(game.Blocks, x	, y - 1	) +
+				count(game.Blocks, x	, y + 1	) +
+				count(game.Blocks, x + 1, y - 1	) +
+				count(game.Blocks, x + 1, y		) +
+				count(game.Blocks, x + 1, y + 1	)
+				assert.Equal(t, counted, block.value)
+			}
+		}
+	}
+}
+
+func print(game *game) {
+	for _, row := range game.Blocks {
+		fmt.Println()
+		for _, block := range row {
+			if block.Node == BOMB {
+				fmt.Print("* ")
+			} else if block.Node == UNKNOWN {
+				fmt.Print("  ")
+			} else {
+				fmt.Printf("%v ", block.value)
+			}
+		}
+	}
 }
