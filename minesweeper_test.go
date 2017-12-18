@@ -1,13 +1,13 @@
 package minesweeper
 
 import (
-	"testing"
-	"github.com/stretchr/testify/assert"
 	"fmt"
+	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 const (
-	SAMPLE_GRID_WIDTH = 10
+	SAMPLE_GRID_WIDTH  = 10
 	SAMPLE_GRID_HEIGHT = 40
 )
 
@@ -64,7 +64,13 @@ func TestGame_SetDifficulty(t *testing.T) {
 func TestShiftFromMaxPosition(t *testing.T) {
 	grid := Grid{5, 5}
 	x, y := shiftPosition(&grid, 4, 4)
-	assert.Equal(t, struct{x int; y int}{ 0, 0}, struct{x int; y int}{x, y})
+	assert.Equal(t, struct {
+		x int
+		y int
+	}{0, 0}, struct {
+		x int
+		y int
+	}{x, y})
 }
 
 func TestBombsInPlace(t *testing.T) {
@@ -75,12 +81,12 @@ func TestBombsInPlace(t *testing.T) {
 
 	game := minesweeper.(*game)
 
-	numOfBombs := int(float32(game.width * game.height) * EASY_MULTIPLIER)
+	numOfBombs := int(float32(game.width*game.height) * EASY_MULTIPLIER)
 	countedBombs := 0
 	for _, row := range game.Blocks {
 		for _, block := range row {
 			if block.Node == BOMB {
-				countedBombs ++
+				countedBombs++
 			}
 		}
 	}
@@ -99,8 +105,8 @@ func TestTalliedBomb(t *testing.T) {
 	count := func(blocks Blocks, x, y int) (has int) {
 		if x >= 0 && y >= 0 &&
 			x < width && y < height &&
-				blocks[x][y].Node & BOMB == 1 {
-					return 1
+			blocks[x][y].Node&BOMB == 1 {
+			return 1
 		}
 		return
 	}
@@ -108,14 +114,14 @@ func TestTalliedBomb(t *testing.T) {
 	hasSurroundingTally := func(blocks Blocks, x, y int) int {
 		if x >= 0 && y >= 0 &&
 			x < width && y < height {
-				switch blocks[x][y].Node {
-				case NUMBER:
-					return 1
-				case BOMB:
-					return -1
-				default:
-					return 0
-				}
+			switch blocks[x][y].Node {
+			case NUMBER:
+				return 1
+			case BOMB:
+				return -1
+			default:
+				return 0
+			}
 		}
 		return -1
 	}
@@ -138,14 +144,14 @@ func TestTalliedBomb(t *testing.T) {
 		for y, block := range row {
 			if block.Node == NUMBER {
 				var counted int
-				counted = count(game.Blocks, x - 1, y - 1	) +
-				count(game.Blocks, x - 1, y		) +
-				count(game.Blocks, x - 1, y + 1	) +
-				count(game.Blocks, x	, y - 1	) +
-				count(game.Blocks, x	, y + 1	) +
-				count(game.Blocks, x + 1, y - 1	) +
-				count(game.Blocks, x + 1, y		) +
-				count(game.Blocks, x + 1, y + 1	)
+				counted = count(game.Blocks, x-1, y-1) +
+					count(game.Blocks, x-1, y) +
+					count(game.Blocks, x-1, y+1) +
+					count(game.Blocks, x, y-1) +
+					count(game.Blocks, x, y+1) +
+					count(game.Blocks, x+1, y-1) +
+					count(game.Blocks, x+1, y) +
+					count(game.Blocks, x+1, y+1)
 				assert.Equal(t, counted, block.value)
 			}
 		}

@@ -1,12 +1,12 @@
 package minesweeper
 
-type Exploded struct {}
+type Exploded struct{}
 
 func (Exploded *Exploded) Error() string {
 	return "Game over"
 }
 
-type GameAlreadyStarted struct {}
+type GameAlreadyStarted struct{}
 
 func (GameAlreadyStarted *GameAlreadyStarted) String() string {
 	return "Game already started. Try setting a new board."

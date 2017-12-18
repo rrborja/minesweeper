@@ -7,7 +7,7 @@ import (
 
 type Node uint8
 type Blocks [][]Block
-type Grid struct {width, height int}
+type Grid struct{ width, height int }
 
 type Difficulty uint8
 
@@ -31,7 +31,7 @@ const HARD_MULTIPLIER = 0.5
 
 type Block struct {
 	Node
-	value int
+	value            int
 	visited, flagged bool
 }
 
@@ -114,24 +114,24 @@ func (block *Block) SetBlock(node Node) {
 }
 
 // Shifts to the right
-func shiftPosition(grid *Grid, x, y int) (_x, _y int){
+func shiftPosition(grid *Grid, x, y int) (_x, _y int) {
 	width := grid.width
 	height := grid.height
-	if x + 1 >= width {
-		if y + 1 >= height {
+	if x+1 >= width {
+		if y+1 >= height {
 			_x, _y = 0, 0
 		} else {
-			_x, _y = 0, y + 1
+			_x, _y = 0, y+1
 		}
 	} else {
-		_x, _y = x + 1, y
+		_x, _y = x+1, y
 	}
 	return
 }
 
 func createBombs(game *game) {
 	area := int(game.width * game.height)
-	for i := 0; i < int(float32(area) * game.difficultyMultiplier); i++ {
+	for i := 0; i < int(float32(area)*game.difficultyMultiplier); i++ {
 		randomPos := randomNumber(area)
 
 		x, y := randomPos%game.width, randomPos/game.width
@@ -139,10 +139,10 @@ func createBombs(game *game) {
 		countLimit := 0
 		for game.Board.Blocks[x][y].Node != UNKNOWN {
 			x, y = shiftPosition(game.Grid, x, y)
-			countLimit ++
+			countLimit++
 		}
 		if countLimit >= CONSECUTIVE_RANDOM_LIMIT {
-			i --
+			i--
 			continue
 		}
 
@@ -159,21 +159,21 @@ func tallyHints(game *game) {
 			x < width && y < height &&
 			blocks[x][y].Node != BOMB {
 			blocks[x][y].Node = NUMBER
-			blocks[x][y].value ++
+			blocks[x][y].value++
 		}
 	}
 
 	for x, row := range game.Blocks {
 		for y, block := range row {
 			if block.Node == BOMB {
-				tally(game.Blocks, x - 1, y - 1	)
-				tally(game.Blocks, x - 1, y		)
-				tally(game.Blocks, x - 1, y + 1	)
-				tally(game.Blocks, x	, y - 1	)
-				tally(game.Blocks, x	, y + 1	)
-				tally(game.Blocks, x + 1, y - 1	)
-				tally(game.Blocks, x + 1, y		)
-				tally(game.Blocks, x + 1, y + 1	)
+				tally(game.Blocks, x-1, y-1)
+				tally(game.Blocks, x-1, y)
+				tally(game.Blocks, x-1, y+1)
+				tally(game.Blocks, x, y-1)
+				tally(game.Blocks, x, y+1)
+				tally(game.Blocks, x+1, y-1)
+				tally(game.Blocks, x+1, y)
+				tally(game.Blocks, x+1, y+1)
 			}
 		}
 	}
