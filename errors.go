@@ -1,9 +1,13 @@
 package minesweeper
 
-type Exploded struct{}
+import "fmt"
+
+type Exploded struct{
+	location struct {x, y int}
+}
 
 func (Exploded *Exploded) Error() string {
-	return "Game over"
+	return fmt.Sprintf("Game over at X=%v Y=%v", Exploded.location.x, Exploded.location.y)
 }
 
 type GameAlreadyStarted struct{}

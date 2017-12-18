@@ -199,6 +199,31 @@ func TestVisitedBombToGameOver(t *testing.T) {
 
 }
 
+func TestVisitedBombToGameOverWithCorrectLocationReason(t *testing.T) {
+	minesweeper := newSampleGame()
+	minesweeper.SetDifficulty(EASY)
+	minesweeper.Play()
+
+	game := minesweeper.(*game)
+	var x, y int
+	var err error
+
+	for i, row := range game.Blocks {
+		for j, block := range row {
+			if block.Node == BOMB {
+				x, y = i, j
+				err = game.Visit(x, y)
+				assert.Error(t, err)
+				assert.EqualError(t, err,
+					fmt.Sprintf("Game over at X=%v Y=%v",
+						x, y))
+				assert.IsType(t, new(Exploded), err)
+			}
+		}
+	}
+
+}
+
 func TestVisitedUnmarkedBlockDistributeVisit(t *testing.T) {
 	minesweeper := newSampleGame()
 	minesweeper.SetDifficulty(EASY)
@@ -218,6 +243,27 @@ func TestVisitedUnmarkedBlockDistributeVisit(t *testing.T) {
 		for _, block := range row {
 			if block.Node == UNKNOWN {
 				assert.True(t, block.visited)
+			}
+		}
+	}
+}
+
+func TestVisitAFlaggedBlock(t *testing.T) {
+	minesweeper := newSampleGame()
+	minesweeper.SetDifficulty(EASY)
+	minesweeper.Play()
+
+	game := minesweeper.(*game)
+
+	for x, row := range game.Blocks {
+		for y, block := range row {
+			if block.Node == BOMB {
+				minesweeper.Flag(x, y)
+				err := minesweeper.Visit(x, y)
+				assert.NoError(t, err)
+				if err != nil {
+					assert.IsType(t, new(Exploded), err)
+				}
 			}
 		}
 	}

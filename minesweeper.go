@@ -80,13 +80,15 @@ func (game *game) Flag(x, y int) {
 }
 
 func (game *game) Visit(x, y int) error {
-	game.Blocks[x][y].visited = true
-	switch game.Blocks[x][y].Node {
-	case BOMB:
-		return new(Exploded)
-	case UNKNOWN:
-		game.Blocks[x][y].visited = false //to avoid infinite recursion, first is to set the base case
-		autoRevealUnmarkedBlock(game, x, y)
+	if !game.Blocks[x][y].flagged {
+		game.Blocks[x][y].visited = true
+		switch game.Blocks[x][y].Node {
+		case BOMB:
+			return &Exploded{struct{ x, y int }{x: x, y: y}}
+		case UNKNOWN:
+			game.Blocks[x][y].visited = false //to avoid infinite recursion, first is to set the base case
+			autoRevealUnmarkedBlock(game, x, y)
+		}
 	}
 	return nil
 }
