@@ -1,8 +1,8 @@
 package minesweeper
 
 import (
-	"math/rand"
-	"time"
+	"crypto/rand"
+	"encoding/binary"
 )
 
 type Node uint8
@@ -102,8 +102,8 @@ func (block *Block) SetBlock(node Node) {
 func shiftPosition(grid *Grid, x, y int) (_x, _y int){
 	width := grid.width
 	height := grid.height
-	if x + 1 > width {
-		if y + 1 > height {
+	if x + 1 >= width {
+		if y + 1 >= height {
 			_x, _y = 0, 0
 		} else {
 			_x, _y = 0, y + 1
@@ -115,16 +115,20 @@ func shiftPosition(grid *Grid, x, y int) (_x, _y int){
 }
 
 func createBombs(game *game) {
-	rand.Seed(time.Now().Unix())
 	area := int(game.width * game.height)
 	for i := 0; i < int(float32(area) * game.difficultyMultiplier); i++ {
-		randomPos := rand.Intn(area)
-		x, y := randomPos%game.width, randomPos/game.height
+		randomPos := randomNumber(area)
+
+		x, y := randomPos%game.width, randomPos/game.width
 
 		countLimit := 0
-		for game.Board.Blocks[x][y].Node != UNKNOWN && countLimit < CONSECUTIVE_RANDOM_LIMIT {
+		for game.Board.Blocks[x][y].Node != UNKNOWN {
 			x, y = shiftPosition(game.Grid, x, y)
 			countLimit ++
+		}
+		if countLimit >= CONSECUTIVE_RANDOM_LIMIT {
+			i --
+			continue
 		}
 
 		game.Blocks[x][y].Node = BOMB
@@ -132,8 +136,14 @@ func createBombs(game *game) {
 }
 
 func createBoard(game *game) {
-	game.Blocks = make([][]Block, game.height)
-	for y := range game.Blocks {
-		game.Blocks[y] = make([]Block, game.width)
+	game.Blocks = make([][]Block, game.width)
+	for x := range game.Blocks {
+		game.Blocks[x] = make([]Block, game.height)
 	}
+}
+
+func randomNumber(max int) int {
+	var n uint16
+	binary.Read(rand.Reader, binary.LittleEndian, &n)
+	return int(n) % max
 }
