@@ -47,6 +47,7 @@ type game struct {
 }
 
 type Minesweeper interface {
+
 	SetGrid(int, int) error
 
 	SetDifficulty(Difficulty)
