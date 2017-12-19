@@ -81,7 +81,7 @@ func TestBombsInPlace(t *testing.T) {
 
 	game := minesweeper.(*game)
 
-	numOfBombs := int(float32(game.width*game.height) * EASY_MULTIPLIER)
+	numOfBombs := int(float32(game.Width*game.Height) * EASY_MULTIPLIER)
 	countedBombs := 0
 	for _, row := range game.Blocks {
 		for _, block := range row {
@@ -99,8 +99,8 @@ func TestTalliedBomb(t *testing.T) {
 	minesweeper.Play()
 
 	game := minesweeper.(*game)
-	width := game.width
-	height := game.height
+	width := game.Width
+	height := game.Height
 
 	count := func(blocks Blocks, x, y int) (has int) {
 		if x >= 0 && y >= 0 &&

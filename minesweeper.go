@@ -7,7 +7,7 @@ import (
 
 type Node uint8
 type Blocks [][]Block
-type Grid struct{ width, height int }
+type Grid struct{ Width, Height int }
 
 type Difficulty uint8
 
@@ -61,7 +61,7 @@ type Minesweeper interface {
 func NewGame(grid ...Grid) Minesweeper {
 	game := new(game)
 	if len(grid) > 0 {
-		game.SetGrid(grid[0].width, grid[0].height)
+		game.SetGrid(grid[0].Width, grid[0].Height)
 	}
 	return game
 }
@@ -117,8 +117,8 @@ func (block *Block) SetBlock(node Node) {
 
 // Shifts to the right
 func shiftPosition(grid *Grid, x, y int) (_x, _y int) {
-	width := grid.width
-	height := grid.height
+	width := grid.Width
+	height := grid.Height
 	if x+1 >= width {
 		if y+1 >= height {
 			_x, _y = 0, 0
@@ -132,11 +132,11 @@ func shiftPosition(grid *Grid, x, y int) (_x, _y int) {
 }
 
 func createBombs(game *game) {
-	area := int(game.width * game.height)
+	area := int(game.Width * game.Height)
 	for i := 0; i < int(float32(area)*game.difficultyMultiplier); i++ {
 		randomPos := randomNumber(area)
 
-		x, y := randomPos%game.width, randomPos/game.width
+		x, y := randomPos%game.Width, randomPos/game.Width
 
 		countLimit := 0
 		for game.Board.Blocks[x][y].Node != UNKNOWN {
@@ -153,8 +153,8 @@ func createBombs(game *game) {
 }
 
 func tallyHints(game *game) {
-	width := game.width
-	height := game.height
+	width := game.Width
+	height := game.Height
 
 	tally := func(blocks Blocks, x, y int) {
 		if x >= 0 && y >= 0 &&
@@ -182,16 +182,16 @@ func tallyHints(game *game) {
 }
 
 func createBoard(game *game) {
-	game.Blocks = make([][]Block, game.width)
+	game.Blocks = make([][]Block, game.Width)
 	for x := range game.Blocks {
-		game.Blocks[x] = make([]Block, game.height)
+		game.Blocks[x] = make([]Block, game.Height)
 	}
 }
 
 func autoRevealUnmarkedBlock(game *game, x, y int) {
 	blocks := game.Blocks
-	width := game.width
-	height := game.height
+	width := game.Width
+	height := game.Height
 
 	if x >= 0 && y >= 0 && x < width && y < height {
 		if blocks[x][y].visited {
