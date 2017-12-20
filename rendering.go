@@ -34,8 +34,19 @@ func (game *game) BombLocations() []Position {
 	return bombPlacements
 }
 
+// Not recommended to call this function until a new update to improve the performance of this method
 func (game *game) HintLocations() []Position {
-	return nil
+	hintPlacements := make([]Position, 0) // TODO: Improve this performance
+
+	for x, row := range game.Blocks {
+		for y, block := range row {
+			if block.Node == NUMBER {
+				hintPlacements = append(hintPlacements, Position{x, y})
+			}
+		}
+	}
+
+	return hintPlacements
 }
 
 func (game *game) History() History {
