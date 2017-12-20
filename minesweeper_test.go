@@ -23,13 +23,6 @@ func TestGridMustNotBeSquaredForTheSakeOfTesting(t *testing.T) {
 	assert.True(t, SAMPLE_GRID_WIDTH != SAMPLE_GRID_HEIGHT)
 }
 
-func TestBlock_SetBlock(t *testing.T) {
-	block := new(Block)
-
-	block.SetBlock(UNKNOWN)
-	assert.Equal(t, block.Node, UNKNOWN)
-}
-
 func TestGame_SetGrid(t *testing.T) {
 	minesweeper := newBlankGame()
 	minesweeper.SetGrid(SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT)
