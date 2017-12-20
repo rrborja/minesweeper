@@ -11,20 +11,20 @@ type Record struct {
 
 type RuntimeGameProperties interface {
 
-	BombLocations() Blocks
+	BombLocations() []Position
 
-	HintLocations() Blocks
+	HintLocations() []Position
 
 	History() History
 
 	LastAction() Record
 }
 
-func (game *game) BombLocations() Blocks {
+func (game *game) BombLocations() []Position {
 	return nil
 }
 
-func (game *game) HintLocations() Blocks {
+func (game *game) HintLocations() []Position {
 	return nil
 }
 
