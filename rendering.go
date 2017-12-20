@@ -21,7 +21,17 @@ type RuntimeGameProperties interface {
 }
 
 func (game *game) BombLocations() []Position {
-	return nil
+	bombPlacements := make([]Position, int(float32(game.Height * game.Width) * game.difficultyMultiplier))
+
+	for x, row := range game.Blocks {
+		for y, block := range row {
+			if block.Node == BOMB {
+				bombPlacements = append(bombPlacements, Position{x, y})
+			}
+		}
+	}
+
+	return bombPlacements
 }
 
 func (game *game) HintLocations() []Position {
