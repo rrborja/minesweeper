@@ -282,6 +282,25 @@ func TestVisitedBlocksReturnOneBlockWhenAHintBlockIsVisited(t *testing.T) {
 	}
 }
 
+func TestVisitedBlocksWhenBlockIsABomb(t *testing.T) {
+	minesweeper := newSampleGame()
+	minesweeper.SetDifficulty(EASY)
+	minesweeper.Play()
+
+	game := minesweeper.(*game)
+
+	for x, row := range game.Blocks {
+		for y, block := range row {
+			if block.Node == BOMB {
+				visitedBlocks, err := minesweeper.Visit(x, y)
+				assert.Error(t, err)
+				assert.EqualError(t, err, (&Exploded{struct{ x, y int }{x: x, y: y}}).Error())
+				assert.Equal(t, visitedBlocks[0], game.Blocks[x][y])
+			}
+		}
+	}
+}
+
 func print(game *game) {
 	for _, row := range game.Blocks {
 		fmt.Println()

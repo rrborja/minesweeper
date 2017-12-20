@@ -87,7 +87,7 @@ func (game *game) Visit(x, y int) ([]Block, error) {
 		case NUMBER:
 			return []Block{game.Blocks[x][y]}, nil
 		case BOMB:
-			return nil, &Exploded{struct{ x, y int }{x: x, y: y}}
+			return []Block{game.Blocks[x][y]}, &Exploded{struct{ x, y int }{x: x, y: y}}
 		case UNKNOWN:
 			game.Blocks[x][y].visited = false //to avoid infinite recursion, first is to set the base case
 			autoRevealUnmarkedBlock(game, x, y)
