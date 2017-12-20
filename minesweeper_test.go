@@ -262,6 +262,26 @@ func TestVisitAFlaggedBlock(t *testing.T) {
 	}
 }
 
+func TestVisitedBlocksReturnOneBlockWhenAHintBlockIsVisited(t *testing.T) {
+	minesweeper := newSampleGame()
+	minesweeper.SetDifficulty(EASY)
+	minesweeper.Play()
+
+	game := minesweeper.(*game)
+
+	for x, row := range game.Blocks {
+		for y, block := range row {
+			if block.Node == NUMBER {
+				visitedBlocks, err := minesweeper.Visit(x, y)
+				assert.NoError(t, err)
+				assert.Equal(t, 1, len(visitedBlocks))
+				assert.Equal(t, block.value, visitedBlocks[0].value)
+				assert.Equal(t, visitedBlocks[0], game.Blocks[x][y])
+			}
+		}
+	}
+}
+
 func print(game *game) {
 	for _, row := range game.Blocks {
 		fmt.Println()

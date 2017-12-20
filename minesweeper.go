@@ -56,7 +56,7 @@ type Minesweeper interface {
 
 	Flag(int, int)
 
-	Visit(int, int) (Blocks, error)
+	Visit(int, int) ([]Block, error)
 }
 
 func NewGame(grid ...Grid) Minesweeper {
@@ -80,10 +80,12 @@ func (game *game) Flag(x, y int) {
 	game.Blocks[x][y].flagged = true
 }
 
-func (game *game) Visit(x, y int) (Blocks, error) {
+func (game *game) Visit(x, y int) ([]Block, error) {
 	if !game.Blocks[x][y].flagged {
 		game.Blocks[x][y].visited = true
 		switch game.Blocks[x][y].Node {
+		case NUMBER:
+			return []Block{game.Blocks[x][y]}, nil
 		case BOMB:
 			return nil, &Exploded{struct{ x, y int }{x: x, y: y}}
 		case UNKNOWN:
