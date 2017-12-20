@@ -70,8 +70,8 @@ func TestBothBombsAndHintsDoNotShareSameLocations(t *testing.T) {
 	assert.NotEmpty(t, bombPlacements)
 	for _, hint := range hintPlacements {
 		for _, bomb := range bombPlacements {
-			if hint.x == bomb.x && hint.y == bomb.y {
-				assert.Fail(t, fmt.Sprintf("A hint at %v:%v shares the same location with a bomb at %v:%v", hint.x, hint.y, bomb.x, bomb.y))
+			if hint.X == bomb.X && hint.Y == bomb.Y {
+				assert.Fail(t, fmt.Sprintf("A hint at %v:%v shares the same location with a bomb at %v:%v", hint.X, hint.Y, bomb.X, bomb.Y))
 			}
 		}
 	}

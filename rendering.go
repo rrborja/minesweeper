@@ -1,6 +1,6 @@
 package minesweeper
 
-type Position struct {x, y int}
+type Position struct {X, Y int}
 type Message string
 type History []Record
 
