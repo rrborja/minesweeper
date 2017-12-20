@@ -32,7 +32,7 @@ const HARD_MULTIPLIER = 0.5
 
 type Block struct {
 	Node
-	value            int
+	Value            int
 	Location         Position
 	visited, flagged bool
 }
@@ -178,7 +178,7 @@ func tallyHints(game *game) {
 			x < width && y < height &&
 			blocks[x][y].Node != BOMB {
 			blocks[x][y].Node = NUMBER
-			blocks[x][y].value++
+			blocks[x][y].Value++
 		}
 	}
 

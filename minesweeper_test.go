@@ -145,7 +145,7 @@ func TestTalliedBomb(t *testing.T) {
 					count(game.Blocks, x+1, y-1) +
 					count(game.Blocks, x+1, y) +
 					count(game.Blocks, x+1, y+1)
-				assert.Equal(t, counted, block.value)
+				assert.Equal(t, counted, block.Value)
 			}
 		}
 	}
@@ -275,7 +275,7 @@ func TestVisitedBlocksReturnOneBlockWhenAHintBlockIsVisited(t *testing.T) {
 				visitedBlocks, err := minesweeper.Visit(x, y)
 				assert.NoError(t, err)
 				assert.Equal(t, 1, len(visitedBlocks))
-				assert.Equal(t, block.value, visitedBlocks[0].value)
+				assert.Equal(t, block.Value, visitedBlocks[0].Value)
 				assert.Equal(t, visitedBlocks[0], game.Blocks[x][y])
 			}
 		}
@@ -386,7 +386,7 @@ func print(game *game) {
 			} else if block.Node == UNKNOWN {
 				fmt.Print("  ")
 			} else {
-				fmt.Printf("%v ", block.value)
+				fmt.Printf("%v ", block.Value)
 			}
 		}
 	}
