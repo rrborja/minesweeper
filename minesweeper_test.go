@@ -182,7 +182,7 @@ func TestVisitedBombToGameOver(t *testing.T) {
 		for j, block := range row {
 			if block.Node == BOMB {
 				x, y = i, j
-				err = game.Visit(x, y)
+				_, err = game.Visit(x, y)
 				assert.Error(t, err)
 				assert.NotNil(t, err)
 				assert.IsType(t, new(Exploded), err)
@@ -205,7 +205,7 @@ func TestVisitedBombToGameOverWithCorrectLocationReason(t *testing.T) {
 		for j, block := range row {
 			if block.Node == BOMB {
 				x, y = i, j
-				err = game.Visit(x, y)
+				_, err = game.Visit(x, y)
 				assert.Error(t, err)
 				assert.EqualError(t, err,
 					fmt.Sprintf("Game over at X=%v Y=%v",
@@ -252,7 +252,7 @@ func TestVisitAFlaggedBlock(t *testing.T) {
 		for y, block := range row {
 			if block.Node == BOMB {
 				minesweeper.Flag(x, y)
-				err := minesweeper.Visit(x, y)
+				_, err := minesweeper.Visit(x, y)
 				assert.NoError(t, err)
 				if err != nil {
 					assert.IsType(t, new(Exploded), err)
