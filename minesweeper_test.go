@@ -301,6 +301,82 @@ func TestVisitedBlocksWhenBlockIsABomb(t *testing.T) {
 	}
 }
 
+func TestVisitedBlockWhenBlockIsUnknownAndSpreadVisits(t *testing.T) {
+	minesweeper := newSampleGame()
+	minesweeper.SetDifficulty(EASY)
+	minesweeper.Play()
+
+	game := minesweeper.(*game)
+
+	var x, y int
+	var actualVisitedBlocks []Block
+	first: for i, row := range game.Blocks {
+		for j, block := range row {
+			if block.Node == UNKNOWN && !block.visited {
+				x, y = i, j
+				var err error
+				actualVisitedBlocks, err = minesweeper.Visit(x, y)
+				assert.NoError(t, err)
+				break first
+			}
+		}
+	}
+
+	var visitedBlocks []Block
+	for _, row := range game.Blocks {
+		for _, block := range row {
+			if block.visited {
+				visitedBlocks = append(visitedBlocks, block)
+			}
+		}
+	}
+
+	assert.NotEmpty(t, actualVisitedBlocks)
+
+	for _, block1 := range visitedBlocks {
+		found := false
+		for _, block2 := range actualVisitedBlocks {
+			if block1 == block2 {
+				found = true
+				break
+			}
+		}
+		assert.Truef(t, found, "%v not found in list %v", block1, actualVisitedBlocks)
+	}
+}
+
+func TestBlockLocationAfterNewGame(t *testing.T) {
+	minesweeper := newSampleGame()
+	minesweeper.SetDifficulty(EASY)
+	minesweeper.Play()
+
+	game := minesweeper.(*game)
+
+	for x, row := range game.Blocks {
+		for y, block := range row {
+			if block.Node == BOMB {
+				assert.Equal(t, Position{x, y}, block.Location)
+			}
+		}
+	}
+
+	for x, row := range game.Blocks {
+		for y, block := range row {
+			if block.Node == NUMBER {
+				assert.Equal(t, Position{x, y}, block.Location)
+			}
+		}
+	}
+
+	for x, row := range game.Blocks {
+		for y, block := range row {
+			if block.Node == UNKNOWN {
+				assert.Equal(t, Position{x, y}, block.Location)
+			}
+		}
+	}
+}
+
 func print(game *game) {
 	for _, row := range game.Blocks {
 		fmt.Println()

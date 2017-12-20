@@ -3,6 +3,7 @@ package minesweeper
 import (
 	"crypto/rand"
 	"encoding/binary"
+	"container/list"
 )
 
 type Node uint8
@@ -32,6 +33,7 @@ const HARD_MULTIPLIER = 0.5
 type Block struct {
 	Node
 	value            int
+	Location         Position
 	visited, flagged bool
 }
 
@@ -90,7 +92,19 @@ func (game *game) Visit(x, y int) ([]Block, error) {
 			return []Block{game.Blocks[x][y]}, &Exploded{struct{ x, y int }{x: x, y: y}}
 		case UNKNOWN:
 			game.Blocks[x][y].visited = false //to avoid infinite recursion, first is to set the base case
-			autoRevealUnmarkedBlock(game, x, y)
+
+			list := list.New()
+			autoRevealUnmarkedBlock(game, list, x, y)
+
+			visitedBlocks := make([]Block, list.Len())
+
+			var counter int
+			for e := list.Front(); e != nil; e = e.Next() {
+				visitedBlocks[counter] = e.Value.(Block)
+				counter ++
+			}
+
+			return visitedBlocks, nil
 		}
 	}
 	return nil, nil
@@ -189,9 +203,14 @@ func createBoard(game *game) {
 	for x := range game.Blocks {
 		game.Blocks[x] = make([]Block, game.Height)
 	}
+	for x, row := range game.Blocks {
+		for y := range row {
+			game.Blocks[x][y].Location = Position{x,y}
+		}
+	}
 }
 
-func autoRevealUnmarkedBlock(game *game, x, y int) {
+func autoRevealUnmarkedBlock(game *game, visitedBlocks *list.List, x, y int) {
 	blocks := game.Blocks
 	width := game.Width
 	height := game.Height
@@ -203,16 +222,20 @@ func autoRevealUnmarkedBlock(game *game, x, y int) {
 		if blocks[x][y].Node == UNKNOWN {
 			blocks[x][y].visited = true
 
-			autoRevealUnmarkedBlock(game, x-1, y-1)
-			autoRevealUnmarkedBlock(game, x-1, y)
-			autoRevealUnmarkedBlock(game, x-1, y+1)
-			autoRevealUnmarkedBlock(game, x, y-1)
-			autoRevealUnmarkedBlock(game, x, y+1)
-			autoRevealUnmarkedBlock(game, x+1, y-1)
-			autoRevealUnmarkedBlock(game, x+1, y)
-			autoRevealUnmarkedBlock(game, x+1, y+1)
+			visitedBlocks.PushBack(blocks[x][y])
+
+			autoRevealUnmarkedBlock(game, visitedBlocks, x-1, y-1)
+			autoRevealUnmarkedBlock(game, visitedBlocks, x-1, y)
+			autoRevealUnmarkedBlock(game, visitedBlocks, x-1, y+1)
+			autoRevealUnmarkedBlock(game, visitedBlocks, x, y-1)
+			autoRevealUnmarkedBlock(game, visitedBlocks, x, y+1)
+			autoRevealUnmarkedBlock(game, visitedBlocks, x+1, y-1)
+			autoRevealUnmarkedBlock(game, visitedBlocks, x+1, y)
+			autoRevealUnmarkedBlock(game, visitedBlocks, x+1, y+1)
 		} else if blocks[x][y].Node == NUMBER {
 			blocks[x][y].visited = true
+
+			visitedBlocks.PushBack(blocks[x][y])
 		}
 	}
 }
