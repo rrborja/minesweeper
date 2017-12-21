@@ -453,6 +453,16 @@ mainLoop:
 	}
 }
 
+func TestGameMediumDifficultyIsSet(t *testing.T) {
+	minesweeper, _ := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	minesweeper.SetDifficulty(MEDIUM)
+	minesweeper.Play()
+
+	game := minesweeper.(*game)
+
+	assert.Equal(t, MEDIUM, game.Difficulty)
+}
+
 func print(game *game) {
 	for _, row := range game.Blocks {
 		fmt.Println()
