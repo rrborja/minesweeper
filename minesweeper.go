@@ -12,6 +12,8 @@ type Grid struct{ Width, Height int }
 
 type Difficulty uint8
 
+type Event uint8
+
 const (
 	UNKNOWN Node = 1 << iota >> 1
 	BOMB
@@ -23,6 +25,12 @@ const (
 	EASY
 	MEDIUM
 	HARD
+)
+
+const (
+	ONGOING Event = 1 << iota
+	WIN
+	LOSE
 )
 
 const CONSECUTIVE_RANDOM_LIMIT = 3
