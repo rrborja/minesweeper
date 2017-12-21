@@ -461,6 +461,7 @@ func TestGameMediumDifficultyIsSet(t *testing.T) {
 	game := minesweeper.(*game)
 
 	assert.Equal(t, MEDIUM, game.Difficulty)
+	assert.Equal(t, int(SAMPLE_GRID_WIDTH*SAMPLE_GRID_HEIGHT*MEDIUM_MULTIPLIER), game.totalBombs())
 }
 
 func print(game *game) {
