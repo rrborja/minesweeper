@@ -464,6 +464,17 @@ func TestGameMediumDifficultyIsSet(t *testing.T) {
 	assert.Equal(t, int(SAMPLE_GRID_WIDTH*SAMPLE_GRID_HEIGHT*MEDIUM_MULTIPLIER), game.totalBombs())
 }
 
+func TestGameHardDifficultyIsSet(t *testing.T) {
+	minesweeper, _ := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	minesweeper.SetDifficulty(HARD)
+	minesweeper.Play()
+
+	game := minesweeper.(*game)
+
+	assert.Equal(t, HARD, game.Difficulty)
+	assert.Equal(t, int(SAMPLE_GRID_WIDTH*SAMPLE_GRID_HEIGHT*HARD_MULTIPLIER), game.totalBombs())
+}
+
 func print(game *game) {
 	for _, row := range game.Blocks {
 		fmt.Println()
