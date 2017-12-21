@@ -187,21 +187,22 @@ func shiftPosition(grid *Grid, x, y int) (_x, _y int) {
 func createBombs(game *game) {
 	area := int(game.Width * game.Height)
 	for i := 0; i < int(float32(area)*game.difficultyMultiplier); i++ {
-		randomPos := randomNumber(area)
+		for {
+			randomPos := randomNumber(area)
 
-		x, y := randomPos%game.Width, randomPos/game.Width
+			x, y := randomPos%game.Width, randomPos/game.Width
 
-		countLimit := 0
-		for game.Board.Blocks[x][y].Node != UNKNOWN {
-			x, y = shiftPosition(game.Grid, x, y)
-			countLimit++
+			countLimit := 0
+			for game.Board.Blocks[x][y].Node != UNKNOWN {
+				x, y = shiftPosition(game.Grid, x, y)
+				countLimit++
+			}
+
+			if countLimit <= CONSECUTIVE_RANDOM_LIMIT {
+				game.Blocks[x][y].Node = BOMB
+				break
+			}
 		}
-		if countLimit >= CONSECUTIVE_RANDOM_LIMIT {
-			i--
-			continue
-		}
-
-		game.Blocks[x][y].Node = BOMB
 	}
 }
 
