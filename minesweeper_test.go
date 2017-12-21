@@ -26,11 +26,13 @@ const (
 )
 
 func newBlankGame() Minesweeper {
-	return NewGame()
+	game, _ := NewGame()
+	return game
 }
 
 func newSampleGame() Minesweeper {
-	return NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	game, _ := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	return game
 }
 
 func TestGridMustNotBeSquaredForTheSakeOfTesting(t *testing.T) {
@@ -389,6 +391,28 @@ func TestBlockLocationAfterNewGame(t *testing.T) {
 				assert.Equal(t, Position{x, y}, block.Location)
 			}
 		}
+	}
+}
+
+func TestCheckEventOfGameWhenWinning(t *testing.T) {
+	minesweeper, event := NewGame(Grid{10, 10})
+	minesweeper.SetDifficulty(EASY)
+	minesweeper.Play()
+
+	game := minesweeper.(*game)
+
+	for x, row := range game.Blocks {
+		for y, block := range row {
+			if block.Node != BOMB && !block.visited {
+				minesweeper.Visit(x, y)
+			}
+		}
+	}
+
+	if won, ok := <-event; ok {
+		assert.Equal(t, WIN, won, "Expecting a winning event")
+	} else {
+		assert.Fail(t, "Channel event closed. Broken code.")
 	}
 }
 

@@ -18,6 +18,7 @@ import (
 	"container/list"
 	"crypto/rand"
 	"encoding/binary"
+	"sync"
 )
 
 type Node uint8
@@ -26,7 +27,10 @@ type Grid struct{ Width, Height int }
 
 type Difficulty uint8
 
-type Event uint8
+type EventType uint8
+type Event chan EventType
+
+var eventLock sync.Mutex
 
 const (
 	UNKNOWN Node = 1 << iota >> 1
@@ -42,12 +46,13 @@ const (
 )
 
 const (
-	ONGOING Event = 1 << iota
+	ONGOING EventType = 1 << iota
 	WIN
 	LOSE
 )
 
 const CONSECUTIVE_RANDOM_LIMIT = 3
+
 const EASY_MULTIPLIER = 0.1
 const MEDIUM_MULTIPLIER = 0.2
 const HARD_MULTIPLIER = 0.5
@@ -66,6 +71,7 @@ type Board struct {
 }
 
 type game struct {
+	Event
 	Board
 	Difficulty
 }
@@ -82,12 +88,16 @@ type Minesweeper interface {
 	Visit(int, int) ([]Block, error)
 }
 
-func NewGame(grid ...Grid) Minesweeper {
+func NewGame(grid ...Grid) (Minesweeper, Event) {
 	game := new(game)
+
 	if len(grid) > 0 {
 		game.SetGrid(grid[0].Width, grid[0].Height)
 	}
-	return game
+
+	game.Event = make(chan EventType, 1)
+
+	return game, game.Event
 }
 
 func (game *game) SetGrid(width, height int) error {
@@ -106,6 +116,9 @@ func (game *game) Flag(x, y int) {
 func (game *game) Visit(x, y int) ([]Block, error) {
 	if !game.Blocks[x][y].flagged {
 		game.Blocks[x][y].visited = true
+		defer func() {
+			go game.validateSolution()
+		}()
 		switch game.Blocks[x][y].Node {
 		case NUMBER:
 			return []Block{game.Blocks[x][y]}, nil
@@ -259,6 +272,39 @@ func autoRevealUnmarkedBlock(game *game, visitedBlocks *list.List, x, y int) {
 			visitedBlocks.PushBack(blocks[x][y])
 		}
 	}
+}
+
+func (game *game) validateSolution() {
+	eventLock.Lock()
+	defer eventLock.Unlock()
+
+	var visitTally int
+	for _, row := range game.Blocks {
+		for _, block := range row {
+			if block.Node != BOMB && block.visited {
+				visitTally++
+			}
+		}
+	}
+	if visitTally == game.totalNonBombs() {
+		game.Event <- WIN
+	}
+}
+
+func (game *game) area() int {
+	return len(game.Blocks) * len(game.Blocks[0])
+}
+
+func (game *game) areaInFloat() float32 {
+	return float32(game.area())
+}
+
+func (game *game) totalBombs() int {
+	return int(game.areaInFloat() * game.difficultyMultiplier)
+}
+
+func (game *game) totalNonBombs() int {
+	return game.area() - game.totalBombs()
 }
 
 func randomNumber(max int) int {
