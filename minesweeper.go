@@ -30,8 +30,6 @@ type Difficulty uint8
 type EventType uint8
 type Event chan EventType
 
-var eventLock sync.Mutex
-
 const (
 	UNKNOWN Node = 1 << iota >> 1
 	BOMB
@@ -59,8 +57,11 @@ const HARD_MULTIPLIER = 0.5
 
 type Block struct {
 	Node
-	Value            int
-	Location         Position
+	Value    int
+	Location struct {
+		X int
+		Y int
+	}
 	visited, flagged bool
 }
 
@@ -74,6 +75,7 @@ type game struct {
 	Event
 	Board
 	Difficulty
+	*sync.Mutex
 }
 
 type Minesweeper interface {
@@ -95,6 +97,7 @@ func NewGame(grid ...Grid) (Minesweeper, Event) {
 		game.SetGrid(grid[0].Width, grid[0].Height)
 	}
 
+	game.Mutex = new(sync.Mutex)
 	game.Event = make(chan EventType, 1)
 
 	return game, game.Event
@@ -114,6 +117,9 @@ func (game *game) Flag(x, y int) {
 }
 
 func (game *game) Visit(x, y int) ([]Block, error) {
+	game.Lock()
+	defer game.Unlock()
+
 	if !game.Blocks[x][y].flagged {
 		game.Blocks[x][y].visited = true
 		defer func() {
@@ -239,7 +245,7 @@ func createBoard(game *game) {
 	}
 	for x, row := range game.Blocks {
 		for y := range row {
-			game.Blocks[x][y].Location = Position{x, y}
+			game.Blocks[x][y].Location = struct{ X, Y int }{X: x, Y: y}
 		}
 	}
 }
@@ -275,9 +281,6 @@ func autoRevealUnmarkedBlock(game *game, visitedBlocks *list.List, x, y int) {
 }
 
 func (game *game) validateSolution() {
-	eventLock.Lock()
-	defer eventLock.Unlock()
-
 	var visitTally int
 	for _, row := range game.Blocks {
 		for _, block := range row {

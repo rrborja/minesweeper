@@ -14,33 +14,16 @@
 
 package minesweeper
 
-type Position struct{ X, Y int }
-type Message string
-type History []Record
+import "github.com/rrborja/minesweeper-go/rendering"
 
-type Record struct {
-	Position
-	Message
-}
-
-type RuntimeGameProperties interface {
-	BombLocations() []Position
-
-	HintLocations() []Position
-
-	History() History
-
-	LastAction() Record
-}
-
-func (game *game) BombLocations() []Position {
-	bombPlacements := make([]Position, int(float32(game.Height*game.Width)*game.difficultyMultiplier))
+func (game *game) BombLocations() []rendering.Position {
+	bombPlacements := make([]rendering.Position, int(float32(game.Height*game.Width)*game.difficultyMultiplier))
 
 	var counter int
 	for x, row := range game.Blocks {
 		for y, block := range row {
 			if block.Node == BOMB {
-				bombPlacements[counter] = Position{x, y}
+				bombPlacements[counter] = rendering.Position{x, y}
 				counter++
 			}
 		}
@@ -50,13 +33,13 @@ func (game *game) BombLocations() []Position {
 }
 
 // Not recommended to call this function until a new update to improve the performance of this method
-func (game *game) HintLocations() []Position {
-	hintPlacements := make([]Position, 0) // TODO: Improve this performance
+func (game *game) HintLocations() []rendering.Position {
+	hintPlacements := make([]rendering.Position, 0) // TODO: Improve this performance
 
 	for x, row := range game.Blocks {
 		for y, block := range row {
 			if block.Node == NUMBER {
-				hintPlacements = append(hintPlacements, Position{x, y})
+				hintPlacements = append(hintPlacements, rendering.Position{x, y})
 			}
 		}
 	}
@@ -64,10 +47,10 @@ func (game *game) HintLocations() []Position {
 	return hintPlacements
 }
 
-func (game *game) History() History {
+func (game *game) History() rendering.History {
 	return nil
 }
 
-func (game *game) LastAction() Record {
-	return Record{}
+func (game *game) LastAction() rendering.Record {
+	return rendering.Record{}
 }

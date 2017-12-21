@@ -16,8 +16,10 @@ package minesweeper
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/rrborja/minesweeper-go/rendering"
+	"github.com/stretchr/testify/assert"
 )
 
 func SampleRenderedGame() Minesweeper {
@@ -30,15 +32,15 @@ func SampleRenderedGame() Minesweeper {
 func TestGameActualBombLocations(t *testing.T) {
 	minesweeper := SampleRenderedGame()
 	game := minesweeper.(*game)
-	properties := minesweeper.(RuntimeGameProperties)
+	properties := minesweeper.(rendering.RuntimeGameProperties)
 
-	bombPlacements := make([]Position, int(float32(game.Height*game.Width)*game.difficultyMultiplier))
+	bombPlacements := make([]rendering.Position, int(float32(game.Height*game.Width)*game.difficultyMultiplier))
 
 	var counter int
 	for x, row := range game.Blocks {
 		for y, block := range row {
 			if block.Node == BOMB {
-				bombPlacements[counter] = Position{x, y}
+				bombPlacements[counter] = rendering.Position{x, y}
 				counter++
 			}
 		}
@@ -55,14 +57,14 @@ func TestGameActualBombLocations(t *testing.T) {
 func TestGameActualHintLocations(t *testing.T) {
 	minesweeper := SampleRenderedGame()
 	game := minesweeper.(*game)
-	properties := minesweeper.(RuntimeGameProperties)
+	properties := minesweeper.(rendering.RuntimeGameProperties)
 
-	hintPlacements := make([]Position, 0)
+	hintPlacements := make([]rendering.Position, 0)
 
 	for x, row := range game.Blocks {
 		for y, block := range row {
 			if block.Node == NUMBER {
-				hintPlacements = append(hintPlacements, Position{x, y})
+				hintPlacements = append(hintPlacements, rendering.Position{x, y})
 			}
 		}
 	}
@@ -77,7 +79,7 @@ func TestGameActualHintLocations(t *testing.T) {
 
 func TestBothBombsAndHintsDoNotShareSameLocations(t *testing.T) {
 	minesweeper := SampleRenderedGame()
-	properties := minesweeper.(RuntimeGameProperties)
+	properties := minesweeper.(rendering.RuntimeGameProperties)
 
 	hintPlacements := properties.HintLocations()
 	bombPlacements := properties.BombLocations()
