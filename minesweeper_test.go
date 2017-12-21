@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 const (
@@ -395,7 +396,7 @@ func TestBlockLocationAfterNewGame(t *testing.T) {
 }
 
 func TestCheckEventOfGameWhenWinning(t *testing.T) {
-	minesweeper, event := NewGame(Grid{10, 10})
+	minesweeper, event := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
 	minesweeper.SetDifficulty(EASY)
 	minesweeper.Play()
 
@@ -409,8 +410,44 @@ func TestCheckEventOfGameWhenWinning(t *testing.T) {
 		}
 	}
 
+	go func() {
+		time.Sleep(5 * time.Second)
+		assert.Fail(t, "Was expecting any event in less than 5 seconds of runtime")
+		close(event)
+	}()
+
 	if won, ok := <-event; ok {
 		assert.Equal(t, WIN, won, "Expecting a winning event")
+	} else {
+		assert.Fail(t, "Channel event closed. Broken code.")
+	}
+}
+
+func TestCheckEventOfGameWhenLosing(t *testing.T) {
+	minesweeper, event := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	minesweeper.SetDifficulty(EASY)
+	minesweeper.Play()
+
+	game := minesweeper.(*game)
+
+mainLoop:
+	for x, row := range game.Blocks {
+		for y, block := range row {
+			if block.Node == BOMB {
+				minesweeper.Visit(x, y)
+				break mainLoop
+			}
+		}
+	}
+
+	go func() {
+		time.Sleep(5 * time.Second)
+		assert.Fail(t, "Was expecting any event in less than 5 seconds of runtime")
+		close(event)
+	}()
+
+	if won, ok := <-event; ok {
+		assert.Equal(t, LOSE, won, "Expecting a losing event")
 	} else {
 		assert.Fail(t, "Channel event closed. Broken code.")
 	}

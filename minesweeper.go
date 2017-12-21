@@ -283,6 +283,9 @@ func (game *game) validateSolution() {
 		for _, block := range row {
 			if block.Node != BOMB && block.visited {
 				visitTally++
+			} else if block.Node == BOMB && block.visited {
+				game.Event <- LOSE
+				return
 			}
 		}
 	}
