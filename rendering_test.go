@@ -37,10 +37,10 @@ func TestGameActualBombLocations(t *testing.T) {
 	bombPlacements := make([]rendering.Position, int(float32(game.Height*game.Width)*game.difficultyMultiplier))
 
 	var counter int
-	for x, row := range game.Blocks {
-		for y, block := range row {
+	for _, row := range game.Blocks {
+		for _, block := range row {
 			if block.Node == BOMB {
-				bombPlacements[counter] = rendering.Position{x, y}
+				bombPlacements[counter] = block
 				counter++
 			}
 		}
@@ -61,10 +61,10 @@ func TestGameActualHintLocations(t *testing.T) {
 
 	hintPlacements := make([]rendering.Position, 0)
 
-	for x, row := range game.Blocks {
-		for y, block := range row {
+	for _, row := range game.Blocks {
+		for _, block := range row {
 			if block.Node == NUMBER {
-				hintPlacements = append(hintPlacements, rendering.Position{x, y})
+				hintPlacements = append(hintPlacements, block)
 			}
 		}
 	}
@@ -88,8 +88,8 @@ func TestBothBombsAndHintsDoNotShareSameLocations(t *testing.T) {
 	assert.NotEmpty(t, bombPlacements)
 	for _, hint := range hintPlacements {
 		for _, bomb := range bombPlacements {
-			if hint.X == bomb.X && hint.Y == bomb.Y {
-				assert.Fail(t, fmt.Sprintf("A hint at %v:%v shares the same location with a bomb at %v:%v", hint.X, hint.Y, bomb.X, bomb.Y))
+			if hint.X() == bomb.X() && hint.Y() == bomb.Y() {
+				assert.Fail(t, fmt.Sprintf("A hint at %v:%v shares the same location with a bomb at %v:%v", hint.X(), hint.Y(), bomb.X(), bomb.Y()))
 			}
 		}
 	}
