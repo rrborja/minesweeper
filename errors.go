@@ -26,10 +26,6 @@ func (Exploded *Exploded) Error() string {
 
 type GameAlreadyStarted struct{}
 
-func (GameAlreadyStarted *GameAlreadyStarted) String() string {
-	return "Game already started. Try setting a new board."
-}
-
 func (GameAlreadyStarted *GameAlreadyStarted) Error() string {
-	return GameAlreadyStarted.String()
+	return "Game already started. Try setting a new board."
 }

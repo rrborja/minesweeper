@@ -168,10 +168,6 @@ func (game *game) Play() error {
 	return nil
 }
 
-func (block *Block) SetBlock(node Node) {
-	block.Node = node
-}
-
 // Shifts to the right
 func shiftPosition(grid *Grid, x, y int) (_x, _y int) {
 	width := grid.Width
