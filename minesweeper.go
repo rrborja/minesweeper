@@ -1,9 +1,23 @@
+// Copyright 2017 Ritchie Borja
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package minesweeper
 
 import (
+	"container/list"
 	"crypto/rand"
 	"encoding/binary"
-	"container/list"
 )
 
 type Node uint8
@@ -57,7 +71,6 @@ type game struct {
 }
 
 type Minesweeper interface {
-
 	SetGrid(int, int) error
 
 	SetDifficulty(Difficulty)
@@ -101,15 +114,15 @@ func (game *game) Visit(x, y int) ([]Block, error) {
 		case UNKNOWN:
 			game.Blocks[x][y].visited = false //to avoid infinite recursion, first is to set the base case
 
-			list := list.New()
-			autoRevealUnmarkedBlock(game, list, x, y)
+			visitedList := list.New()
+			autoRevealUnmarkedBlock(game, visitedList, x, y)
 
-			visitedBlocks := make([]Block, list.Len())
+			visitedBlocks := make([]Block, visitedList.Len())
 
 			var counter int
-			for e := list.Front(); e != nil; e = e.Next() {
+			for e := visitedList.Front(); e != nil; e = e.Next() {
 				visitedBlocks[counter] = e.Value.(Block)
-				counter ++
+				counter++
 			}
 
 			return visitedBlocks, nil
@@ -213,7 +226,7 @@ func createBoard(game *game) {
 	}
 	for x, row := range game.Blocks {
 		for y := range row {
-			game.Blocks[x][y].Location = Position{x,y}
+			game.Blocks[x][y].Location = Position{x, y}
 		}
 	}
 }
