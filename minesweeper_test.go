@@ -612,6 +612,24 @@ func TestGameDoesRecordPlayersAction(t *testing.T) {
 
 }
 
+func TestRevisitedBlockDoCompletelyOblivious(t *testing.T) {
+	minesweeper, _ := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	minesweeper.SetDifficulty(EASY)
+	minesweeper.Play()
+
+	game := minesweeper.(*game)
+
+	for x, row := range game.Blocks {
+		for y, block := range row {
+			if block.Node != BOMB {
+				minesweeper.Visit(x, y)
+				result, _ := minesweeper.Visit(x, y) // Visit again. Point of this test.
+				assert.Nil(t, result, "Game must be oblivious of a visited block.")
+			}
+		}
+	}
+}
+
 func print(game *game) {
 	for _, row := range game.Blocks {
 		fmt.Println()
