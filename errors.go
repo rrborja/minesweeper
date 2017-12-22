@@ -33,7 +33,7 @@ func (GameAlreadyStarted GameAlreadyStarted) Error() string {
 type UnspecifiedDifficulty struct{}
 
 func (UnspecifiedDifficulty UnspecifiedDifficulty) Error() string {
-	return "Difficulty was not specified. Use Difficulty(Difficulty) method before calling Play()"
+	return "Difficulty was not specified. Use Difficulty(Difficulty) method before calling Play()."
 }
 
 type UnspecifiedGrid struct{}
