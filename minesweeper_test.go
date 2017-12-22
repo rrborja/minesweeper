@@ -592,7 +592,6 @@ func TestGameDoesRecordPlayersAction(t *testing.T) {
 				last.Action = visited.Number
 			default:
 				fmt.Println(blocks)
-				panic("Unexpected")
 			}
 		default: // Unknown
 			last.Action = visited.Unknown
@@ -601,12 +600,9 @@ func TestGameDoesRecordPlayersAction(t *testing.T) {
 		last.Position = blocks[0]
 	}
 
-	//assert.Equal(t, last, story.History(), "Initial phase of comparing list must pass")
+	assert.Equal(t, last, story.History(), "Initial phase of comparing list must pass")
 
 	for cursor, cursor2 := last, story.History(); cursor != nil && cursor2 != nil; cursor, cursor2 = cursor.History, cursor2.History {
-		fmt.Println(cursor.Record)
-		fmt.Println(cursor2.Record)
-		fmt.Println()
 		assert.Equal(t, cursor.Record, cursor2.Record)
 	}
 
@@ -626,6 +622,38 @@ func TestRevisitedBlockDoCompletelyOblivious(t *testing.T) {
 				result, _ := minesweeper.Visit(x, y) // Visit again. Point of this test.
 				assert.Nil(t, result, "Game must be oblivious of a visited block.")
 			}
+		}
+	}
+}
+
+func TestBlock_String(t *testing.T) {
+	minesweeper, _ := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	minesweeper.SetDifficulty(EASY)
+	minesweeper.Play()
+
+	game := minesweeper.(*game)
+
+	for _, row := range game.Blocks {
+		for _, block := range row {
+			var expectedType string
+			switch block.Node {
+			case UNKNOWN:
+				expectedType = "blank"
+			case NUMBER:
+				expectedType = "number"
+			case BOMB:
+				expectedType = "bomb"
+			}
+
+			var value string
+			if block.Value > 0 {
+				value = string(block.Value)
+			}
+
+			assert.Equal(t,
+				fmt.Sprintf("\n\nBlock: \n\tValue\t :\t%v\n\tLocation :\tx:%v y:%v\n\tType\t :\t%v\n\tVisited? :\t%v\n\tFlagged? :\t%v\n\n",
+					value, block.Location.X, block.Location.Y, expectedType, block.visited, block.flagged),
+				block.String())
 		}
 	}
 }

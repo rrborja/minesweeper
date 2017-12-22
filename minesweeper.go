@@ -348,11 +348,9 @@ func (block Block) String() string {
 		nodeType = "number"
 	case BOMB:
 		nodeType = "bomb"
-	default:
-		nodeType = "error"
 	}
 
-	var value string = "1"
+	var value string
 	if block.Value > 0 {
 		value = string(block.Value)
 	}
