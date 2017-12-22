@@ -35,3 +35,9 @@ type UnspecifiedDifficulty struct{}
 func (UnspecifiedDifficulty UnspecifiedDifficulty) Error() string {
 	return "Difficulty was not specified. Use Difficulty(Difficulty) method before calling Play()"
 }
+
+type UnspecifiedGrid struct{}
+
+func (UnspecifiedGrid UnspecifiedGrid) Error() string {
+	return "Grid was not specified. Pass a Grid object with the corresponding coordinates before calling Play()."
+}

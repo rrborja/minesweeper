@@ -17,5 +17,10 @@ func TestGameAlreadyStarted_Error(t *testing.T) {
 
 func TestUnspecifiedDifficulty_Error(t *testing.T) {
 	err := UnspecifiedDifficulty{}
-	assert.EqualError(t, err, "Difficulty was not specified. Use Difficulty(Difficulty) method before calling Play()")
+	assert.EqualError(t, err, "Difficulty was not specified. Use Difficulty(Difficulty) method before calling Play().")
+}
+
+func TestUnspecifiedGrid_Error(t *testing.T) {
+	err := UnspecifiedGrid{}
+	assert.EqualError(t, err, "Grid was not specified. Pass a Grid object with the corresponding coordinates before calling Play().")
 }
