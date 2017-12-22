@@ -309,10 +309,9 @@ func TestVisitedBlocksWhenBlockIsABomb(t *testing.T) {
 	for x, row := range game.Blocks {
 		for y, block := range row {
 			if block.Node == BOMB {
-				visitedBlocks, err := minesweeper.Visit(x, y)
+				_, err := minesweeper.Visit(x, y)
 				assert.Error(t, err)
 				assert.EqualError(t, err, (&Exploded{struct{ x, y int }{x: x, y: y}}).Error())
-				assert.Equal(t, visitedBlocks[0], game.Blocks[x][y])
 			}
 		}
 	}
@@ -484,6 +483,34 @@ func TestGameHardDifficultyIsSet(t *testing.T) {
 
 	assert.Equal(t, HARD, game.Difficulty)
 	assert.Equal(t, int(SAMPLE_GRID_WIDTH*SAMPLE_GRID_HEIGHT*HARD_MULTIPLIER), game.totalBombs())
+}
+
+func TestGameOverReturnAllBombLocations(t *testing.T) {
+	minesweeper, _ := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	minesweeper.SetDifficulty(EASY)
+	minesweeper.Play()
+
+	game := minesweeper.(*game)
+
+	var bombLocations []Block
+
+mainLoop:
+	for x, row := range game.Blocks {
+		for y, block := range row {
+			if block.Node == BOMB {
+				bombLocations, _ = minesweeper.Visit(x, y)
+				break mainLoop
+			}
+		}
+	}
+
+	assert.Equalf(t, game.totalBombs(), len(bombLocations), "Number of bombs must be %v", game.totalBombs())
+
+	for _, bombLocation := range bombLocations {
+		x := bombLocation.Location.X
+		y := bombLocation.Location.Y
+		assert.Equalf(t, game.Blocks[x][y].Node, BOMB, "Block at %v:%v is not a bomb.", x, y)
+	}
 }
 
 func print(game *game) {
