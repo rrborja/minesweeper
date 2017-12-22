@@ -513,6 +513,14 @@ mainLoop:
 	}
 }
 
+func TestPlayGameWithoutSettingDifficulty(t *testing.T) {
+	minesweeper, _ := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	err := minesweeper.Play()
+
+	assert.Error(t, err)
+	assert.Equal(t, new(UnspecifiedDifficulty), err)
+}
+
 func print(game *game) {
 	for _, row := range game.Blocks {
 		fmt.Println()

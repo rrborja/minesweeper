@@ -167,6 +167,9 @@ func (game *game) SetDifficulty(difficulty Difficulty) {
 }
 
 func (game *game) Play() error {
+	if game.Difficulty == NOTSET {
+		return new(UnspecifiedDifficulty)
+	}
 	createBombs(game)
 	tallyHints(game)
 	return nil
