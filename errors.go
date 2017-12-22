@@ -20,12 +20,18 @@ type Exploded struct {
 	location struct{ x, y int }
 }
 
-func (Exploded *Exploded) Error() string {
+func (Exploded Exploded) Error() string {
 	return fmt.Sprintf("Game over at X=%v Y=%v", Exploded.location.x, Exploded.location.y)
 }
 
 type GameAlreadyStarted struct{}
 
-func (GameAlreadyStarted *GameAlreadyStarted) Error() string {
+func (GameAlreadyStarted GameAlreadyStarted) Error() string {
 	return "Game already started. Try setting a new board."
+}
+
+type UnspecifiedDifficulty struct{}
+
+func (UnspecifiedDifficulty UnspecifiedDifficulty) Error() string {
+	return "Difficulty was not specified. Use Difficulty(Difficulty) method before calling Play()"
 }
