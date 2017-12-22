@@ -557,28 +557,21 @@ func TestVisitedUnknownIsTheFirstInTheListOfDistributedVisits(t *testing.T) {
 
 func TestGameDoesRecordPlayersAction(t *testing.T) {
 	minesweeper, _ := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	minesweeper.SetDifficulty(MEDIUM)
 	minesweeper.Play()
 
+	var expectedHistory []visited.Record
 	var story visited.Story = minesweeper.(*game)
 
-	var last *visited.History
-
-	maxMoves := 3
+	maxMoves := 10
+mainLoop:
 	for i := 0; i < maxMoves; i++ {
 		randomX := randomNumber(SAMPLE_GRID_WIDTH)
 		randomY := randomNumber(SAMPLE_GRID_HEIGHT)
 		blocks, _ := minesweeper.Visit(randomX, randomY)
 
-		if len(blocks) == 0 { // Either already visited block or flagged block
+		if blocks == nil { // Either already visited block or flagged block
 			continue
-		}
-
-		if last == nil {
-			last = new(visited.History)
-		} else {
-			temp := last
-			last = new(visited.History)
-			last.History = temp
 		}
 
 		switch len(blocks) {
@@ -587,23 +580,28 @@ func TestGameDoesRecordPlayersAction(t *testing.T) {
 		case 1: // Number
 			switch blocks[0].Node {
 			case BOMB:
-				last.Action = visited.Bomb
+				expectedHistory = append(expectedHistory, visited.Record{Position: blocks[0], Action: visited.Bomb})
+				break mainLoop
 			case NUMBER:
-				last.Action = visited.Number
+				expectedHistory = append(expectedHistory, visited.Record{Position: blocks[0], Action: visited.Number})
 			default:
-				fmt.Println(blocks)
+				panic("Unexpected")
 			}
 		default: // Unknown
-			last.Action = visited.Unknown
+			if blocks[0].Node == BOMB {
+				expectedHistory = append(expectedHistory, visited.Record{Position: blocks[0], Action: visited.Bomb})
+			} else if blocks[0].Node == UNKNOWN {
+				expectedHistory = append(expectedHistory, visited.Record{Position: blocks[0], Action: visited.Unknown})
+			} else {
+				panic("Unexpected")
+			}
 		}
-
-		last.Position = blocks[0]
 	}
 
-	assert.Equal(t, last, story.History(), "Initial phase of comparing list must pass")
+	assert.NotNil(t, story.History(), "Initial phase of comparing list must pass")
 
-	for cursor, cursor2 := last, story.History(); cursor != nil && cursor2 != nil; cursor, cursor2 = cursor.History, cursor2.History {
-		assert.Equal(t, cursor.Record, cursor2.Record)
+	for cursor, i := story.History(), len(expectedHistory)-1; cursor != nil && i >= 0; cursor, i = cursor.History, i-1 {
+		assert.Equal(t, expectedHistory[i], cursor.Record)
 	}
 
 }
@@ -656,6 +654,37 @@ func TestBlock_String(t *testing.T) {
 				block.String())
 		}
 	}
+}
+
+func TestAttemptVisitWithoutSettingUpGameEnvironmentOfGrid(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			assert.EqualError(t, UnspecifiedGrid{}, r.(error).Error())
+		} else {
+			assert.Fail(t, "We are expecting an error when grid is not set.")
+		}
+	}()
+
+	minesweeper, _ := NewGame()
+	minesweeper.SetDifficulty(HARD)
+	minesweeper.Play()
+
+	minesweeper.Visit(0, 0)
+}
+
+func TestAttemptVisitWithoutSettingUpGameEnvironmentOfDifficulty(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			assert.EqualError(t, UnspecifiedDifficulty{}, r.(error).Error())
+		} else {
+			assert.Fail(t, "We are expecting an error when difficulty is not set.")
+		}
+	}()
+
+	minesweeper, _ := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	minesweeper.Play()
+
+	minesweeper.Visit(0, 0)
 }
 
 func print(game *game) {

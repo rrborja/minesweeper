@@ -125,28 +125,39 @@ func (game *game) Flag(x, y int) {
 }
 
 func (game *game) Visit(x, y int) ([]Block, error) {
+	game.validateGameEnvironment()
+
 	game.Lock()
 	defer game.Unlock()
 
-	if !game.Blocks[x][y].flagged && !game.Blocks[x][y].visited {
-		game.Blocks[x][y].visited = true
+	block := &game.Blocks[x][y]
+
+	if !block.flagged && !block.visited {
+		block.visited = true
 		defer func() {
 			go game.validateSolution()
 		}()
-		switch game.Blocks[x][y].Node {
+		switch block.Node {
 		case NUMBER:
-			defer game.Add(visited.Record{game.Blocks[x][y], visited.Number})
-			return []Block{game.Blocks[x][y]}, nil
+			defer game.Add(visited.Record{*block, visited.Number})
+			return []Block{*block}, nil
 		case BOMB:
-			defer game.Add(visited.Record{game.Blocks[x][y], visited.Bomb})
-			bombLocations := make([]Block, game.totalBombs())
-			for i, bombLocation := range game.BombLocations() {
-				bombLocations[i] = bombLocation.(Block)
+			defer game.Add(visited.Record{*block, visited.Bomb})
+
+			bombLocations := make([]Block, 0, game.totalBombs()-1)
+
+			for _, bombLocation := range game.BombLocations() {
+				if bombLocation != *block {
+					bombLocations = append(bombLocations, bombLocation.(Block))
+				}
 			}
+
+			bombLocations = append([]Block{*block}, bombLocations...)
+
 			return bombLocations, &Exploded{struct{ x, y int }{x: x, y: y}}
 		case UNKNOWN:
-			defer game.Add(visited.Record{game.Blocks[x][y], visited.Unknown})
-			game.Blocks[x][y].visited = false //to avoid infinite recursion, first is to set the base case
+			defer game.Add(visited.Record{*block, visited.Unknown})
+			block.visited = false //to avoid infinite recursion, first is to set the base case
 
 			visitedList := list.New()
 			autoRevealUnmarkedBlock(game, visitedList, x, y)
@@ -320,6 +331,15 @@ func (game *game) validateSolution() {
 	}
 	if visitTally == game.totalNonBombs() {
 		game.Event <- WIN
+	}
+}
+
+func (game *game) validateGameEnvironment() {
+	if game.Grid == nil {
+		panic(UnspecifiedGrid{})
+	}
+	if game.Difficulty == NOTSET {
+		panic(UnspecifiedDifficulty{})
 	}
 }
 
