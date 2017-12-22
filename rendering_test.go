@@ -24,6 +24,7 @@ import (
 	"testing"
 
 	"github.com/rrborja/minesweeper-go/rendering"
+	"github.com/rrborja/minesweeper-go/visited"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -98,4 +99,43 @@ func TestBothBombsAndHintsDoNotShareSameLocations(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestRecentPlayersMove(t *testing.T) {
+	minesweeper, _ := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	minesweeper.SetDifficulty(MEDIUM)
+	minesweeper.Play()
+
+	var story visited.Story = minesweeper.(*game)
+
+	var recentMove visited.Record
+
+	maxMoves := 10
+	for i := 0; i < maxMoves; i++ {
+		randomX := randomNumber(SAMPLE_GRID_WIDTH)
+		randomY := randomNumber(SAMPLE_GRID_HEIGHT)
+		blocks, err := minesweeper.Visit(randomX, randomY)
+
+		if len(blocks) == 0 { // Either already visited block or flagged block
+			continue
+		}
+
+		var expectedAction visited.Action
+		switch blocks[0].Node {
+		case UNKNOWN:
+			expectedAction = visited.Unknown
+		case NUMBER:
+			expectedAction = visited.Number
+		case BOMB:
+			expectedAction = visited.Bomb
+		}
+
+		recentMove = visited.Record{Position: blocks[0], Action: expectedAction}
+
+		if err != nil {
+			break
+		}
+	}
+
+	assert.Equal(t, recentMove, story.LastAction())
 }
