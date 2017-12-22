@@ -521,6 +521,17 @@ func TestPlayGameWithoutSettingDifficulty(t *testing.T) {
 	assert.Equal(t, new(UnspecifiedDifficulty), err)
 }
 
+func TestPlayGameWithoutSettingGrid(t *testing.T) {
+	minesweeper, _ := NewGame()
+	minesweeper.SetDifficulty(HARD)
+	err := minesweeper.Play()
+
+	assert.Nil(t, minesweeper.(*game).Grid,
+		"For the sake of testing this, we expect Grid is not specified. Therefore this test must fail.")
+	assert.Error(t, err)
+	assert.Equal(t, new(UnspecifiedGrid), err)
+}
+
 func print(game *game) {
 	for _, row := range game.Blocks {
 		fmt.Println()

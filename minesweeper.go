@@ -170,6 +170,9 @@ func (game *game) Play() error {
 	if game.Difficulty == NOTSET {
 		return new(UnspecifiedDifficulty)
 	}
+	if game.Grid == nil {
+		return new(UnspecifiedGrid)
+	}
 	createBombs(game)
 	tallyHints(game)
 	return nil
@@ -200,6 +203,10 @@ func shiftPosition(grid *Grid, x, y int) (_x, _y int) {
 }
 
 func createBombs(game *game) {
+	if game.Grid == nil {
+		return
+	}
+
 	area := int(game.Width * game.Height)
 	for i := 0; i < int(float32(area)*game.difficultyMultiplier); i++ {
 		for {
@@ -222,6 +229,10 @@ func createBombs(game *game) {
 }
 
 func tallyHints(game *game) {
+	if game.Grid == nil {
+		return
+	}
+
 	width := game.Width
 	height := game.Height
 
