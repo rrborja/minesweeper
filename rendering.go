@@ -14,7 +14,14 @@
 
 package minesweeper
 
-import "github.com/rrborja/minesweeper-go/rendering"
+import (
+	"github.com/rrborja/minesweeper-go/rendering"
+	"github.com/rrborja/minesweeper-go/visited"
+)
+
+type RecordedActions struct {
+	*visited.History
+}
 
 func (game *game) BombLocations() []rendering.Position {
 	bombPlacements := make([]rendering.Position, int(float32(game.Height*game.Width)*game.difficultyMultiplier))
@@ -47,10 +54,21 @@ func (game *game) HintLocations() []rendering.Position {
 	return hintPlacements
 }
 
-func (game *game) History() rendering.History {
-	return nil
+func (game *game) History() *visited.History {
+	return game.RecordedActions.History
 }
 
-func (game *game) LastAction() rendering.Record {
-	return rendering.Record{}
+func (game *game) LastAction() visited.Record {
+	return game.RecordedActions.History.Record
+}
+
+func (game *RecordedActions) Add(record visited.Record) {
+	if game.History == nil {
+		game.History = new(visited.History)
+	} else {
+		temp := game.History
+		game.History = new(visited.History)
+		game.History.History = temp
+	}
+	game.Record = record
 }

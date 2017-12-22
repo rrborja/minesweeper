@@ -18,20 +18,9 @@ type Position interface {
 	X() int
 	Y() int
 }
-type Message string
-type History []Record
 
-type Record struct {
-	Position
-	Message
-}
-
-type RuntimeGameProperties interface {
+type Locations interface {
 	BombLocations() []Position
 
 	HintLocations() []Position
-
-	History() History
-
-	LastAction() Record
 }

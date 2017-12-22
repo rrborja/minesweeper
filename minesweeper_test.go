@@ -16,6 +16,7 @@ package minesweeper
 
 import (
 	"fmt"
+	"github.com/rrborja/minesweeper-go/visited"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -530,6 +531,80 @@ func TestPlayGameWithoutSettingGrid(t *testing.T) {
 		"For the sake of testing this, we expect Grid is not specified. Therefore this test must fail.")
 	assert.Error(t, err)
 	assert.Equal(t, new(UnspecifiedGrid), err)
+}
+
+func TestVisitedUnknownIsTheFirstInTheListOfDistributedVisits(t *testing.T) {
+	minesweeper, _ := NewGame()
+	minesweeper.SetDifficulty(HARD)
+	minesweeper.Play()
+
+	game := minesweeper.(*game)
+
+	for i, row := range game.Blocks {
+		for j, block := range row {
+			if block.Node == UNKNOWN && !block.visited {
+				visitedBlocks, _ := minesweeper.Visit(i, j)
+				assert.Equal(t, block, visitedBlocks[0])
+			}
+		}
+	}
+}
+
+func TestGameDoesRecordPlayersAction(t *testing.T) {
+	minesweeper, _ := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	minesweeper.Play()
+
+	var story visited.Story = minesweeper.(*game)
+
+	var last *visited.History
+
+	maxMoves := 3
+	for i := 0; i < maxMoves; i++ {
+		randomX := randomNumber(SAMPLE_GRID_WIDTH)
+		randomY := randomNumber(SAMPLE_GRID_HEIGHT)
+		blocks, _ := minesweeper.Visit(randomX, randomY)
+
+		if len(blocks) == 0 { // Either already visited block or flagged block
+			continue
+		}
+
+		if last == nil {
+			last = new(visited.History)
+		} else {
+			temp := last
+			last = new(visited.History)
+			last.History = temp
+		}
+
+		switch len(blocks) {
+		case 0: // Either already visited block or flagged block
+			panic("Unexpected")
+		case 1: // Number
+			switch blocks[0].Node {
+			case BOMB:
+				last.Action = visited.Bomb
+			case NUMBER:
+				last.Action = visited.Number
+			default:
+				fmt.Println(blocks)
+				panic("Unexpected")
+			}
+		default: // Unknown
+			last.Action = visited.Unknown
+		}
+
+		last.Position = blocks[0]
+	}
+
+	//assert.Equal(t, last, story.History(), "Initial phase of comparing list must pass")
+
+	for cursor, cursor2 := last, story.History(); cursor != nil && cursor2 != nil; cursor, cursor2 = cursor.History, cursor2.History {
+		fmt.Println(cursor.Record)
+		fmt.Println(cursor2.Record)
+		fmt.Println()
+		assert.Equal(t, cursor.Record, cursor2.Record)
+	}
+
 }
 
 func print(game *game) {

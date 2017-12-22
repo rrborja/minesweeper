@@ -18,6 +18,8 @@ import (
 	"container/list"
 	"crypto/rand"
 	"encoding/binary"
+	"fmt"
+	"github.com/rrborja/minesweeper-go/visited"
 	"sync"
 )
 
@@ -75,6 +77,7 @@ type game struct {
 	Event
 	Board
 	Difficulty
+	RecordedActions
 	*sync.Mutex
 }
 
@@ -120,21 +123,24 @@ func (game *game) Visit(x, y int) ([]Block, error) {
 	game.Lock()
 	defer game.Unlock()
 
-	if !game.Blocks[x][y].flagged {
+	if !game.Blocks[x][y].flagged && !game.Blocks[x][y].visited {
 		game.Blocks[x][y].visited = true
 		defer func() {
 			go game.validateSolution()
 		}()
 		switch game.Blocks[x][y].Node {
 		case NUMBER:
+			defer game.Add(visited.Record{game.Blocks[x][y], visited.Number})
 			return []Block{game.Blocks[x][y]}, nil
 		case BOMB:
+			defer game.Add(visited.Record{game.Blocks[x][y], visited.Bomb})
 			bombLocations := make([]Block, game.totalBombs())
 			for i, bombLocation := range game.BombLocations() {
 				bombLocations[i] = bombLocation.(Block)
 			}
 			return bombLocations, &Exploded{struct{ x, y int }{x: x, y: y}}
 		case UNKNOWN:
+			defer game.Add(visited.Record{game.Blocks[x][y], visited.Unknown})
 			game.Blocks[x][y].visited = false //to avoid infinite recursion, first is to set the base case
 
 			visitedList := list.New()
@@ -326,6 +332,28 @@ func (game *game) totalBombs() int {
 
 func (game *game) totalNonBombs() int {
 	return game.area() - game.totalBombs()
+}
+
+func (block Block) String() string {
+	var nodeType string
+	switch block.Node {
+	case UNKNOWN:
+		nodeType = "blank"
+	case NUMBER:
+		nodeType = "number"
+	case BOMB:
+		nodeType = "bomb"
+	default:
+		nodeType = "error"
+	}
+
+	var value string = "1"
+	if block.Value > 0 {
+		value = string(block.Value)
+	}
+
+	return fmt.Sprintf("\n\nBlock: \n\tValue\t :\t%v\n\tLocation :\tx:%v y:%v\n\tType\t :\t%v\n\tVisited? :\t%v\n\tFlagged? :\t%v\n\n",
+		value, block.Location.X, block.Location.Y, nodeType, block.visited, block.flagged)
 }
 
 func randomNumber(max int) int {

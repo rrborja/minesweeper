@@ -32,7 +32,7 @@ func SampleRenderedGame() Minesweeper {
 func TestGameActualBombLocations(t *testing.T) {
 	minesweeper := SampleRenderedGame()
 	game := minesweeper.(*game)
-	properties := minesweeper.(rendering.RuntimeGameProperties)
+	properties := minesweeper.(rendering.Locations)
 
 	bombPlacements := make([]rendering.Position, int(float32(game.Height*game.Width)*game.difficultyMultiplier))
 
@@ -57,7 +57,7 @@ func TestGameActualBombLocations(t *testing.T) {
 func TestGameActualHintLocations(t *testing.T) {
 	minesweeper := SampleRenderedGame()
 	game := minesweeper.(*game)
-	properties := minesweeper.(rendering.RuntimeGameProperties)
+	properties := minesweeper.(rendering.Locations)
 
 	hintPlacements := make([]rendering.Position, 0)
 
@@ -79,7 +79,7 @@ func TestGameActualHintLocations(t *testing.T) {
 
 func TestBothBombsAndHintsDoNotShareSameLocations(t *testing.T) {
 	minesweeper := SampleRenderedGame()
-	properties := minesweeper.(rendering.RuntimeGameProperties)
+	properties := minesweeper.(rendering.Locations)
 
 	hintPlacements := properties.HintLocations()
 	bombPlacements := properties.BombLocations()
