@@ -119,40 +119,17 @@ func TestTalliedBomb(t *testing.T) {
 	width := game.Width
 	height := game.Height
 
-	count := func(blocks blocks, x, y int) (has int) {
-		if x >= 0 && y >= 0 &&
-			x < width && y < height &&
-			blocks[x][y].Node&Bomb == 1 {
-			return 1
-		}
-		return
-	}
-
-	hasSurroundingTally := func(blocks blocks, x, y int) int {
-		if x >= 0 && y >= 0 &&
-			x < width && y < height {
-			switch blocks[x][y].Node {
-			case Number:
-				return 1
-			case Bomb:
-				return -1
-			default:
-				return 0
-			}
-		}
-		return -1
-	}
 	for x, row := range game.blocks {
 		for y, block := range row {
 			if block.Node == Bomb {
-				assert.NotEqual(t, 0, hasSurroundingTally(game.blocks, x-1, y-1))
-				assert.NotEqual(t, 0, hasSurroundingTally(game.blocks, x-1, y))
-				assert.NotEqual(t, 0, hasSurroundingTally(game.blocks, x-1, y+1))
-				assert.NotEqual(t, 0, hasSurroundingTally(game.blocks, x, y-1))
-				assert.NotEqual(t, 0, hasSurroundingTally(game.blocks, x, y+1))
-				assert.NotEqual(t, 0, hasSurroundingTally(game.blocks, x+1, y-1))
-				assert.NotEqual(t, 0, hasSurroundingTally(game.blocks, x+1, y))
-				assert.NotEqual(t, 0, hasSurroundingTally(game.blocks, x+1, y+1))
+				assert.NotEqual(t, 0, hasSurroundingTally(game.blocks, width, height, x-1, y-1))
+				assert.NotEqual(t, 0, hasSurroundingTally(game.blocks, width, height, x-1, y))
+				assert.NotEqual(t, 0, hasSurroundingTally(game.blocks, width, height, x-1, y+1))
+				assert.NotEqual(t, 0, hasSurroundingTally(game.blocks, width, height, x, y-1))
+				assert.NotEqual(t, 0, hasSurroundingTally(game.blocks, width, height, x, y+1))
+				assert.NotEqual(t, 0, hasSurroundingTally(game.blocks, width, height, x+1, y-1))
+				assert.NotEqual(t, 0, hasSurroundingTally(game.blocks, width, height, x+1, y))
+				assert.NotEqual(t, 0, hasSurroundingTally(game.blocks, width, height, x+1, y+1))
 			}
 		}
 	}
@@ -161,14 +138,14 @@ func TestTalliedBomb(t *testing.T) {
 		for y, block := range row {
 			if block.Node == Number {
 				var counted int
-				counted = count(game.blocks, x-1, y-1) +
-					count(game.blocks, x-1, y) +
-					count(game.blocks, x-1, y+1) +
-					count(game.blocks, x, y-1) +
-					count(game.blocks, x, y+1) +
-					count(game.blocks, x+1, y-1) +
-					count(game.blocks, x+1, y) +
-					count(game.blocks, x+1, y+1)
+				counted = count(game.blocks, width, height, x-1, y-1) +
+					count(game.blocks, width, height, x-1, y) +
+					count(game.blocks, width, height, x-1, y+1) +
+					count(game.blocks, width, height, x, y-1) +
+					count(game.blocks, width, height, x, y+1) +
+					count(game.blocks, width, height, x+1, y-1) +
+					count(game.blocks, width, height, x+1, y) +
+					count(game.blocks, width, height, x+1, y+1)
 				assert.Equal(t, counted, block.Value)
 			}
 		}
@@ -744,6 +721,30 @@ func TestBlock_Flagged(t *testing.T) {
 			}
 		}
 	}
+}
+
+func count(blocks blocks, width, height, x, y int) (has int) {
+	if x >= 0 && y >= 0 &&
+		x < width && y < height &&
+		blocks[x][y].Node&Bomb == 1 {
+		return 1
+	}
+	return
+}
+
+func hasSurroundingTally(blocks blocks, width, height, x, y int) int {
+	if x >= 0 && y >= 0 &&
+		x < width && y < height {
+		switch blocks[x][y].Node {
+		case Number:
+			return 1
+		case Bomb:
+			return -1
+		default:
+			return 0
+		}
+	}
+	return -1
 }
 
 func print(game *game) {

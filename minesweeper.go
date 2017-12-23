@@ -209,7 +209,7 @@ type Minesweeper interface {
 }
 
 // NewGame Creates a new minesweeper instance. Note that this only creates the minesweeper
-// instance without the neccessary settings such as the game's difficulty and the
+// instance without the necessary settings such as the game's difficulty and the
 // game's board size and calling this method will not start the game.
 //
 // This method returns the minesweeper interface and the event handler. The event
