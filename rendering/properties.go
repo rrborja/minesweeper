@@ -19,13 +19,22 @@
 
 package rendering
 
+// Position is used to interface the cell's xy-coordinates used for this package
 type Position interface {
+	// X returns the x-coordinate of the cell in the grid
 	X() int
+
+	// Y returns the y-coordinate of the cell in the grid
 	Y() int
 }
 
+// Tracker is used to interface the instance of the Minesweeper game to retrieve
+// certain information such as the location of all mines and the location of all
+// non-zero warning values
 type Tracker interface {
+	// BombLocations returns all the location of all mines in the grid
 	BombLocations() []Position
 
+	// HintLocations returns all the warning numbers in the grid
 	HintLocations() []Position
 }
