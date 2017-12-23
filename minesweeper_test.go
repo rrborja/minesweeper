@@ -702,6 +702,15 @@ func TestRepeatThePlayMethodThenReturnError(t *testing.T) {
 	assert.EqualError(t, minesweeper.Play(), GameAlreadyStarted{}.Error())
 }
 
+func TestCannotChangeDifficultyOnceGameIsStarted(t *testing.T) {
+	minesweeper := newSampleGame()
+	minesweeper.SetDifficulty(MEDIUM)
+
+	minesweeper.Play()
+
+	assert.EqualError(t, minesweeper.SetDifficulty(HARD), GameAlreadyStarted{}.Error())
+}
+
 func print(game *game) {
 	for _, row := range game.Blocks {
 		fmt.Println()

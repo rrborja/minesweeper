@@ -96,7 +96,7 @@ type Minesweeper interface {
 	SetGrid(int, int) error
 
 	// Sets
-	SetDifficulty(Difficulty)
+	SetDifficulty(Difficulty) error
 
 	Play() error
 
@@ -198,7 +198,11 @@ func (game *game) Visit(x, y int) ([]Block, error) {
 	return nil, nil
 }
 
-func (game *game) SetDifficulty(difficulty Difficulty) {
+func (game *game) SetDifficulty(difficulty Difficulty) error {
+	if game.Mutex != nil {
+		return new(GameAlreadyStarted)
+	}
+
 	game.Difficulty = difficulty
 	switch difficulty {
 	case EASY:
@@ -208,6 +212,8 @@ func (game *game) SetDifficulty(difficulty Difficulty) {
 	case HARD:
 		game.difficultyMultiplier = HARD_MULTIPLIER
 	}
+
+	return nil
 }
 
 func (game *game) Play() error {
