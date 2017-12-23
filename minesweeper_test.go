@@ -687,6 +687,21 @@ func TestAttemptVisitWithoutSettingUpGameEnvironmentOfDifficulty(t *testing.T) {
 	minesweeper.Visit(0, 0)
 }
 
+func TestRepeatThePlayMethodThenReturnError(t *testing.T) {
+	go func() {
+		time.Sleep(5 * time.Second)
+		t.Fail()
+		panic("Testing timeout. Recursion loop in tallyHints()")
+	}()
+
+	minesweeper := newSampleGame()
+	minesweeper.SetDifficulty(MEDIUM)
+
+	minesweeper.Play()
+
+	assert.EqualError(t, minesweeper.Play(), GameAlreadyStarted{}.Error())
+}
+
 func print(game *game) {
 	for _, row := range game.Blocks {
 		fmt.Println()

@@ -87,8 +87,15 @@ type game struct {
 }
 
 type Minesweeper interface {
+
+	// Sets or changes the board's size. You can't change the board's size once
+	// the Play() method has been called, otherwise, a GameAlreadyStarted error
+	// will return.
+	//
+	// Nothing will return if the setting the board's size is successful
 	SetGrid(int, int) error
 
+	// Sets
 	SetDifficulty(Difficulty)
 
 	Play() error
@@ -98,6 +105,22 @@ type Minesweeper interface {
 	Visit(int, int) ([]Block, error)
 }
 
+// Creates a new minesweeper instance. Note that this only creates the minesweeper
+// instance without the neccessary settings such as the game's difficulty and the
+// game's board size and calling this method will not start the game.
+//
+// This method returns the minesweeper interface and the event handler. The event
+// handler allows you to setup event listeners in such situation when a game
+// seamlessly triggers a win or lose event. The event handler is a buffered
+// channel that, when used, allows you to setup a particular goroutine to
+// independently listen for these events.
+//
+// As for this method's argument, this method appears to accept an arbitrary
+// number of trailing arguments of type Grid. It can only, however, handle only
+// one Grid instance and the rest of the arguments will be ignored. Although
+// supplying this Grid is also optional, you may encounter an UnspecifiedGrid
+// panic when calling the Play() method if the Grid is not supplied. You may
+// explicitly supply it by calling the SetGrid(int, int) method.
 func NewGame(grid ...Grid) (Minesweeper, Event) {
 	game := new(game)
 
@@ -105,7 +128,6 @@ func NewGame(grid ...Grid) (Minesweeper, Event) {
 		game.SetGrid(grid[0].Width, grid[0].Height)
 	}
 
-	game.Mutex = new(sync.Mutex)
 	game.Event = make(chan EventType, 1)
 
 	return game, game.Event
@@ -189,6 +211,11 @@ func (game *game) SetDifficulty(difficulty Difficulty) {
 }
 
 func (game *game) Play() error {
+	if game.Mutex != nil {
+		return new(GameAlreadyStarted)
+	}
+	game.Mutex = new(sync.Mutex)
+
 	if game.Difficulty == NOTSET {
 		return new(UnspecifiedDifficulty)
 	}
