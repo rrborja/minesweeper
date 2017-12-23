@@ -30,7 +30,7 @@ import (
 
 func SampleRenderedGame() Minesweeper {
 	minesweeper := newSampleGame()
-	minesweeper.SetDifficulty(EASY)
+	minesweeper.SetDifficulty(Easy)
 	minesweeper.Play()
 	return minesweeper
 }
@@ -38,14 +38,14 @@ func SampleRenderedGame() Minesweeper {
 func TestGameActualBombLocations(t *testing.T) {
 	minesweeper := SampleRenderedGame()
 	game := minesweeper.(*game)
-	properties := minesweeper.(rendering.Locations)
+	properties := minesweeper.(rendering.Tracker)
 
 	bombPlacements := make([]rendering.Position, int(float32(game.Height*game.Width)*game.difficultyMultiplier))
 
 	var counter int
-	for _, row := range game.Blocks {
+	for _, row := range game.blocks {
 		for _, block := range row {
-			if block.Node == BOMB {
+			if block.Node == Bomb {
 				bombPlacements[counter] = block
 				counter++
 			}
@@ -63,13 +63,13 @@ func TestGameActualBombLocations(t *testing.T) {
 func TestGameActualHintLocations(t *testing.T) {
 	minesweeper := SampleRenderedGame()
 	game := minesweeper.(*game)
-	properties := minesweeper.(rendering.Locations)
+	properties := minesweeper.(rendering.Tracker)
 
 	hintPlacements := make([]rendering.Position, 0)
 
-	for _, row := range game.Blocks {
+	for _, row := range game.blocks {
 		for _, block := range row {
-			if block.Node == NUMBER {
+			if block.Node == Number {
 				hintPlacements = append(hintPlacements, block)
 			}
 		}
@@ -85,7 +85,7 @@ func TestGameActualHintLocations(t *testing.T) {
 
 func TestBothBombsAndHintsDoNotShareSameLocations(t *testing.T) {
 	minesweeper := SampleRenderedGame()
-	properties := minesweeper.(rendering.Locations)
+	properties := minesweeper.(rendering.Tracker)
 
 	hintPlacements := properties.HintLocations()
 	bombPlacements := properties.BombLocations()
@@ -103,10 +103,10 @@ func TestBothBombsAndHintsDoNotShareSameLocations(t *testing.T) {
 
 func TestRecentPlayersMove(t *testing.T) {
 	minesweeper, _ := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
-	minesweeper.SetDifficulty(MEDIUM)
+	minesweeper.SetDifficulty(Medium)
 	minesweeper.Play()
 
-	var story visited.Story = minesweeper.(*game)
+	var story visited.StoryTeller = minesweeper.(*game)
 
 	var recentMove visited.Record
 
@@ -122,11 +122,11 @@ func TestRecentPlayersMove(t *testing.T) {
 
 		var expectedAction visited.Action
 		switch blocks[0].Node {
-		case UNKNOWN:
+		case Unknown:
 			expectedAction = visited.Unknown
-		case NUMBER:
+		case Number:
 			expectedAction = visited.Number
-		case BOMB:
+		case Bomb:
 			expectedAction = visited.Bomb
 		}
 

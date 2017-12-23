@@ -32,9 +32,9 @@ func (game *game) BombLocations() []rendering.Position {
 	bombPlacements := make([]rendering.Position, int(float32(game.Height*game.Width)*game.difficultyMultiplier))
 
 	var counter int
-	for _, row := range game.Blocks {
+	for _, row := range game.blocks {
 		for _, block := range row {
-			if block.Node == BOMB {
+			if block.Node == Bomb {
 				bombPlacements[counter] = block
 				counter++
 			}
@@ -48,9 +48,9 @@ func (game *game) BombLocations() []rendering.Position {
 func (game *game) HintLocations() []rendering.Position {
 	hintPlacements := make([]rendering.Position, 0) // TODO: Improve this performance
 
-	for _, row := range game.Blocks {
+	for _, row := range game.blocks {
 		for _, block := range row {
-			if block.Node == NUMBER {
+			if block.Node == Number {
 				hintPlacements = append(hintPlacements, block)
 			}
 		}

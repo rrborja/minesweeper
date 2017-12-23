@@ -24,7 +24,7 @@ type Position interface {
 	Y() int
 }
 
-type Locations interface {
+type Tracker interface {
 	BombLocations() []Position
 
 	HintLocations() []Position

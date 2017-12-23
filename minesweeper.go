@@ -24,43 +24,46 @@ import (
 	"crypto/rand"
 	"encoding/binary"
 	"fmt"
-	"github.com/rrborja/minesweeper-go/visited"
 	"sync"
+
+	"github.com/rrborja/minesweeper-go/visited"
 )
 
 type Node uint8
-type Blocks [][]Block
+
 type Grid struct{ Width, Height int }
 
 type Difficulty uint8
 
-type EventType uint8
-type Event chan EventType
+type Event chan eventType
+
+type eventType uint8
+type blocks [][]Block
 
 const (
-	UNKNOWN Node = 1 << iota >> 1
-	BOMB
-	NUMBER
+	Unknown Node = 1 << iota >> 1
+	Bomb
+	Number
 )
 
 const (
-	NOTSET Difficulty = iota
-	EASY
-	MEDIUM
-	HARD
+	notSet Difficulty = iota
+	Easy
+	Medium
+	Hard
 )
 
 const (
-	ONGOING EventType = 1 << iota
-	WIN
-	LOSE
+	ongoing eventType = iota
+	Win
+	Lose
 )
 
-const CONSECUTIVE_RANDOM_LIMIT = 3
+const consecutiveRandomLimit = 3
 
-const EASY_MULTIPLIER = 0.1
-const MEDIUM_MULTIPLIER = 0.2
-const HARD_MULTIPLIER = 0.5
+const easyMultiplier = 0.1
+const mediumMultiplier = 0.2
+const hardMultiplier = 0.5
 
 type Block struct {
 	Node
@@ -72,36 +75,91 @@ type Block struct {
 	visited, flagged bool
 }
 
-type Board struct {
+type board struct {
 	*Grid
-	Blocks
+	blocks
 	difficultyMultiplier float32
 }
 
 type game struct {
 	Event
-	Board
+	board
 	Difficulty
 	RecordedActions
 	*sync.Mutex
 }
 
+// This is the main point of consumption and manipulation of the Minesweeper's
+// game state. Methods provided by this interface are common use cases to solve
+// a minesweeper game.
+//
+// Any instance derived by this interface is compatible to be casted to the
+// rendering.Tracker and visited.StoryTeller interfaces.
 type Minesweeper interface {
-
 	// Sets or changes the board's size. You can't change the board's size once
 	// the Play() method has been called, otherwise, a GameAlreadyStarted error
 	// will return.
 	//
-	// Nothing will return if the setting the board's size is successful
+	// Nothing will return if the setting the board's size is successful.
+	//
+	// Whenever the game ends, this instance will be garbage collected. Calling
+	// any exported methods when the game ended may result in nil pointer
+	// dereference. Creating a new setup of the game is ideal.
 	SetGrid(int, int) error
 
-	// Sets
+	// Sets the difficulty of the game as a basis of the number of mines. An
+	// error will return if this method is being called when a game is already
+	// being played or better yet, the Play() method has already been called.
 	SetDifficulty(Difficulty) error
 
+	// When called, the game sets up all the mines in place randomly. The
+	// placement is non-deterministic since the implementation uses the
+	// "crypto/rand" package.
+	//
+	// An error will return when this method is called twice or more.
 	Play() error
 
+	// When called, the cell according to the coordinates supplied in the
+	// method argument will marked as flagged. When a particular cell is
+	// flagged, the cell in question will prevent from being handled by the
+	// game when the Visit(int, int) method with the same coordinate of the
+	// cell in question is called.
 	Flag(int, int)
 
+	// Visits a particular cell according to the xy-coordinates of the argument
+	// supplied by this method being called. There are three scenarios that
+	// depend to the generated configuration of the game:
+	//
+	// A warning number:
+	// We may expect a number when visiting a particular cell. The returned
+	// []Block will return an array of revealed cells. Accordingly, this
+	// type of scenario will always return an array of one Block element.
+	//
+	// No mine but no warning number:
+	// When encountered, a visited cell will recursively visit all neighboring
+	// or adjacent cells because if a visited cells contains no warning number,
+	// then there are no neighboring mines per se. Thus, visiting all the
+	// neighboring cells are safe to be visited and continues to visit any
+	// probed blank cell recursively until no blank cell is left to be probed.
+	// The returned []Block will return an array of all probed cells with the
+	// first element as the original visited cell.
+	//
+	// A mine:
+	// When encountered, the game ends revealing all mines by the returned
+	// []Block array. It will also return an Exploded error as a second return
+	// value. Furthermore, when event handling is supported, a Lose event will
+	// enqueue to the game's even channel buffer. You can remember this buffer
+	// when you originally called the NewGame(...Grid) function and store the second
+	// returned value as your event listener in a separate goroutine.
+	//
+	// There is also one trivial scenario. Visiting a block that is flagged
+	// (i.e. originally called the Flag(int, int) method as a result) will have
+	// no effect on the state of the game. If a flagged cell with a suspected mine
+	// is visited, it will prevent it from being visited and the game would likely
+	// treat the called method as if nothing was called at all.
+	//
+	// The last Visit() method call with the last non-mine cell will trigger
+	// the Win event. The game ends eventually.
 	Visit(int, int) ([]Block, error)
 }
 
@@ -128,7 +186,7 @@ func NewGame(grid ...Grid) (Minesweeper, Event) {
 		game.SetGrid(grid[0].Width, grid[0].Height)
 	}
 
-	game.Event = make(chan EventType, 1)
+	game.Event = make(chan eventType, 1)
 
 	return game, game.Event
 }
@@ -143,7 +201,7 @@ func (game *game) SetGrid(width, height int) error {
 }
 
 func (game *game) Flag(x, y int) {
-	game.Blocks[x][y].flagged = true
+	game.blocks[x][y].flagged = true
 }
 
 func (game *game) Visit(x, y int) ([]Block, error) {
@@ -152,7 +210,7 @@ func (game *game) Visit(x, y int) ([]Block, error) {
 	game.Lock()
 	defer game.Unlock()
 
-	block := &game.Blocks[x][y]
+	block := &game.blocks[x][y]
 
 	if !block.flagged && !block.visited {
 		block.visited = true
@@ -160,10 +218,10 @@ func (game *game) Visit(x, y int) ([]Block, error) {
 			go game.validateSolution()
 		}()
 		switch block.Node {
-		case NUMBER:
+		case Number:
 			defer game.Add(visited.Record{*block, visited.Number})
 			return []Block{*block}, nil
-		case BOMB:
+		case Bomb:
 			defer game.Add(visited.Record{*block, visited.Bomb})
 
 			bombLocations := make([]Block, 0, game.totalBombs()-1)
@@ -177,7 +235,7 @@ func (game *game) Visit(x, y int) ([]Block, error) {
 			bombLocations = append([]Block{*block}, bombLocations...)
 
 			return bombLocations, &Exploded{struct{ x, y int }{x: x, y: y}}
-		case UNKNOWN:
+		case Unknown:
 			defer game.Add(visited.Record{*block, visited.Unknown})
 			block.visited = false //to avoid infinite recursion, first is to set the base case
 
@@ -205,12 +263,12 @@ func (game *game) SetDifficulty(difficulty Difficulty) error {
 
 	game.Difficulty = difficulty
 	switch difficulty {
-	case EASY:
-		game.difficultyMultiplier = EASY_MULTIPLIER
-	case MEDIUM:
-		game.difficultyMultiplier = MEDIUM_MULTIPLIER
-	case HARD:
-		game.difficultyMultiplier = HARD_MULTIPLIER
+	case Easy:
+		game.difficultyMultiplier = easyMultiplier
+	case Medium:
+		game.difficultyMultiplier = mediumMultiplier
+	case Hard:
+		game.difficultyMultiplier = hardMultiplier
 	}
 
 	return nil
@@ -222,7 +280,7 @@ func (game *game) Play() error {
 	}
 	game.Mutex = new(sync.Mutex)
 
-	if game.Difficulty == NOTSET {
+	if game.Difficulty == notSet {
 		return new(UnspecifiedDifficulty)
 	}
 	if game.Grid == nil {
@@ -266,13 +324,13 @@ func createBombs(game *game) {
 			x, y := randomPos%game.Width, randomPos/game.Width
 
 			countLimit := 0
-			for game.Board.Blocks[x][y].Node != UNKNOWN {
+			for game.board.blocks[x][y].Node != Unknown {
 				x, y = shiftPosition(game.Grid, x, y)
 				countLimit++
 			}
 
-			if countLimit <= CONSECUTIVE_RANDOM_LIMIT {
-				game.Blocks[x][y].Node = BOMB
+			if countLimit <= consecutiveRandomLimit {
+				game.blocks[x][y].Node = Bomb
 				break
 			}
 		}
@@ -283,45 +341,45 @@ func tallyHints(game *game) {
 	width := game.Width
 	height := game.Height
 
-	tally := func(blocks Blocks, x, y int) {
+	tally := func(blocks blocks, x, y int) {
 		if x >= 0 && y >= 0 &&
 			x < width && y < height &&
-			blocks[x][y].Node != BOMB {
-			blocks[x][y].Node = NUMBER
+			blocks[x][y].Node != Bomb {
+			blocks[x][y].Node = Number
 			blocks[x][y].Value++
 		}
 	}
 
-	for x, row := range game.Blocks {
+	for x, row := range game.blocks {
 		for y, block := range row {
-			if block.Node == BOMB {
-				tally(game.Blocks, x-1, y-1)
-				tally(game.Blocks, x-1, y)
-				tally(game.Blocks, x-1, y+1)
-				tally(game.Blocks, x, y-1)
-				tally(game.Blocks, x, y+1)
-				tally(game.Blocks, x+1, y-1)
-				tally(game.Blocks, x+1, y)
-				tally(game.Blocks, x+1, y+1)
+			if block.Node == Bomb {
+				tally(game.blocks, x-1, y-1)
+				tally(game.blocks, x-1, y)
+				tally(game.blocks, x-1, y+1)
+				tally(game.blocks, x, y-1)
+				tally(game.blocks, x, y+1)
+				tally(game.blocks, x+1, y-1)
+				tally(game.blocks, x+1, y)
+				tally(game.blocks, x+1, y+1)
 			}
 		}
 	}
 }
 
 func createBoard(game *game) {
-	game.Blocks = make([][]Block, game.Width)
-	for x := range game.Blocks {
-		game.Blocks[x] = make([]Block, game.Height)
+	game.blocks = make([][]Block, game.Width)
+	for x := range game.blocks {
+		game.blocks[x] = make([]Block, game.Height)
 	}
-	for x, row := range game.Blocks {
+	for x, row := range game.blocks {
 		for y := range row {
-			game.Blocks[x][y].Location = struct{ X, Y int }{X: x, Y: y}
+			game.blocks[x][y].Location = struct{ X, Y int }{X: x, Y: y}
 		}
 	}
 }
 
 func autoRevealUnmarkedBlock(game *game, visitedBlocks *list.List, x, y int) {
-	blocks := game.Blocks
+	blocks := game.blocks
 	width := game.Width
 	height := game.Height
 
@@ -329,7 +387,7 @@ func autoRevealUnmarkedBlock(game *game, visitedBlocks *list.List, x, y int) {
 		if blocks[x][y].visited {
 			return
 		}
-		if blocks[x][y].Node == UNKNOWN {
+		if blocks[x][y].Node == Unknown {
 			blocks[x][y].visited = true
 
 			visitedBlocks.PushBack(blocks[x][y])
@@ -342,7 +400,7 @@ func autoRevealUnmarkedBlock(game *game, visitedBlocks *list.List, x, y int) {
 			autoRevealUnmarkedBlock(game, visitedBlocks, x+1, y-1)
 			autoRevealUnmarkedBlock(game, visitedBlocks, x+1, y)
 			autoRevealUnmarkedBlock(game, visitedBlocks, x+1, y+1)
-		} else if blocks[x][y].Node == NUMBER {
+		} else if blocks[x][y].Node == Number {
 			blocks[x][y].visited = true
 
 			visitedBlocks.PushBack(blocks[x][y])
@@ -352,18 +410,18 @@ func autoRevealUnmarkedBlock(game *game, visitedBlocks *list.List, x, y int) {
 
 func (game *game) validateSolution() {
 	var visitTally int
-	for _, row := range game.Blocks {
+	for _, row := range game.blocks {
 		for _, block := range row {
-			if block.Node != BOMB && block.visited {
+			if block.Node != Bomb && block.visited {
 				visitTally++
-			} else if block.Node == BOMB && block.visited {
-				game.Event <- LOSE
+			} else if block.Node == Bomb && block.visited {
+				game.Event <- Lose
 				return
 			}
 		}
 	}
 	if visitTally == game.totalNonBombs() {
-		game.Event <- WIN
+		game.Event <- Win
 	}
 }
 
@@ -371,13 +429,13 @@ func (game *game) validateGameEnvironment() {
 	if game.Grid == nil {
 		panic(UnspecifiedGrid{})
 	}
-	if game.Difficulty == NOTSET {
+	if game.Difficulty == notSet {
 		panic(UnspecifiedDifficulty{})
 	}
 }
 
 func (game *game) area() int {
-	return len(game.Blocks) * len(game.Blocks[0])
+	return len(game.blocks) * len(game.blocks[0])
 }
 
 func (game *game) areaInFloat() float32 {
@@ -392,14 +450,22 @@ func (game *game) totalNonBombs() int {
 	return game.area() - game.totalBombs()
 }
 
+func (block *Block) Visited() bool {
+	return block.visited
+}
+
+func (block *Block) Flagged() bool {
+	return block.flagged
+}
+
 func (block Block) String() string {
 	var nodeType string
 	switch block.Node {
-	case UNKNOWN:
+	case Unknown:
 		nodeType = "blank"
-	case NUMBER:
+	case Number:
 		nodeType = "number"
-	case BOMB:
+	case Bomb:
 		nodeType = "bomb"
 	}
 

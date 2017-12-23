@@ -43,7 +43,7 @@ type Position interface {
 	Y() int
 }
 
-type Story interface {
+type StoryTeller interface {
 	History() *History
 
 	LastAction() Record
