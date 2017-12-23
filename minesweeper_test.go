@@ -379,7 +379,7 @@ func TestBlockLocationAfterNewGame(t *testing.T) {
 	for x, row := range game.blocks {
 		for y, block := range row {
 			if block.Node == Bomb {
-				assert.Equal(t, struct{ X, Y int }{X: x, Y: y}, block.location)
+				assert.Equal(t, struct{ x, y int }{x: x, y: y}, block.location)
 			}
 		}
 	}
@@ -387,7 +387,7 @@ func TestBlockLocationAfterNewGame(t *testing.T) {
 	for x, row := range game.blocks {
 		for y, block := range row {
 			if block.Node == Number {
-				assert.Equal(t, struct{ X, Y int }{X: x, Y: y}, block.location)
+				assert.Equal(t, struct{ x, y int }{x: x, y: y}, block.location)
 			}
 		}
 	}
@@ -395,7 +395,7 @@ func TestBlockLocationAfterNewGame(t *testing.T) {
 	for x, row := range game.blocks {
 		for y, block := range row {
 			if block.Node == Unknown {
-				assert.Equal(t, struct{ X, Y int }{X: x, Y: y}, block.location)
+				assert.Equal(t, struct{ x, y int }{x: x, y: y}, block.location)
 			}
 		}
 	}
