@@ -21,15 +21,16 @@ package minesweeper
 
 import (
 	"fmt"
-	"github.com/rrborja/minesweeper-go/visited"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+
+	"github.com/rrborja/minesweeper-go/visited"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
-	SAMPLE_GRID_WIDTH  = 10
-	SAMPLE_GRID_HEIGHT = 40
+	sampleGridWidth  = 10
+	sampleGridHeight = 40
 )
 
 func newBlankGame() Minesweeper {
@@ -38,23 +39,23 @@ func newBlankGame() Minesweeper {
 }
 
 func newSampleGame() Minesweeper {
-	game, _ := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	game, _ := NewGame(Grid{sampleGridWidth, sampleGridHeight})
 	return game
 }
 
 func TestGridMustNotBeSquaredForTheSakeOfTesting(t *testing.T) {
-	assert.True(t, SAMPLE_GRID_WIDTH != SAMPLE_GRID_HEIGHT)
+	assert.True(t, sampleGridWidth != sampleGridHeight)
 }
 
 func TestGame_SetGrid(t *testing.T) {
 	minesweeper := newBlankGame()
-	minesweeper.SetGrid(SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT)
-	assert.Equal(t, minesweeper.(*game).board.Grid, &Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	minesweeper.SetGrid(sampleGridWidth, sampleGridHeight)
+	assert.Equal(t, minesweeper.(*game).board.Grid, &Grid{sampleGridWidth, sampleGridHeight})
 }
 
 func TestGameWithGridArgument(t *testing.T) {
 	minesweeper := newSampleGame()
-	assert.Equal(t, minesweeper.(*game).board.Grid, &Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	assert.Equal(t, minesweeper.(*game).board.Grid, &Grid{sampleGridWidth, sampleGridHeight})
 }
 
 func TestNewGridWhenStartedGame(t *testing.T) {
@@ -62,7 +63,7 @@ func TestNewGridWhenStartedGame(t *testing.T) {
 	err := minesweeper.SetGrid(10, 20)
 	assert.Error(t, err)
 	assert.NotNil(t, err, "Must report an error upon setting a new grid from an already started game")
-	assert.IsType(t, new(GameAlreadyStarted), err, "The error must be GameAlreadyStarted error type")
+	assert.IsType(t, new(GameAlreadyStartedError), err, "The error must be GameAlreadyStarted error type")
 }
 
 func TestFlaggedBlock(t *testing.T) {
@@ -208,7 +209,7 @@ func TestVisitedBombToGameOver(t *testing.T) {
 				_, err = game.Visit(x, y)
 				assert.Error(t, err)
 				assert.NotNil(t, err)
-				assert.IsType(t, new(Exploded), err)
+				assert.IsType(t, new(ExplodedError), err)
 			}
 		}
 	}
@@ -233,7 +234,7 @@ func TestVisitedBombToGameOverWithCorrectLocationReason(t *testing.T) {
 				assert.EqualError(t, err,
 					fmt.Sprintf("Game over at X=%v Y=%v",
 						x, y))
-				assert.IsType(t, new(Exploded), err)
+				assert.IsType(t, new(ExplodedError), err)
 			}
 		}
 	}
@@ -278,7 +279,7 @@ func TestVisitAFlaggedBlock(t *testing.T) {
 				_, err := minesweeper.Visit(x, y)
 				assert.NoError(t, err)
 				if err != nil {
-					assert.IsType(t, new(Exploded), err)
+					assert.IsType(t, new(ExplodedError), err)
 				}
 			}
 		}
@@ -317,7 +318,7 @@ func TestVisitedBlocksWhenBlockIsABomb(t *testing.T) {
 			if block.Node == Bomb {
 				_, err := minesweeper.Visit(x, y)
 				assert.Error(t, err)
-				assert.EqualError(t, err, (&Exploded{struct{ x, y int }{x: x, y: y}}).Error())
+				assert.EqualError(t, err, (&ExplodedError{struct{ x, y int }{x: x, y: y}}).Error())
 			}
 		}
 	}
@@ -378,7 +379,7 @@ func TestBlockLocationAfterNewGame(t *testing.T) {
 	for x, row := range game.blocks {
 		for y, block := range row {
 			if block.Node == Bomb {
-				assert.Equal(t, struct{ X, Y int }{X: x, Y: y}, block.Location)
+				assert.Equal(t, struct{ X, Y int }{X: x, Y: y}, block.location)
 			}
 		}
 	}
@@ -386,7 +387,7 @@ func TestBlockLocationAfterNewGame(t *testing.T) {
 	for x, row := range game.blocks {
 		for y, block := range row {
 			if block.Node == Number {
-				assert.Equal(t, struct{ X, Y int }{X: x, Y: y}, block.Location)
+				assert.Equal(t, struct{ X, Y int }{X: x, Y: y}, block.location)
 			}
 		}
 	}
@@ -394,14 +395,14 @@ func TestBlockLocationAfterNewGame(t *testing.T) {
 	for x, row := range game.blocks {
 		for y, block := range row {
 			if block.Node == Unknown {
-				assert.Equal(t, struct{ X, Y int }{X: x, Y: y}, block.Location)
+				assert.Equal(t, struct{ X, Y int }{X: x, Y: y}, block.location)
 			}
 		}
 	}
 }
 
 func TestCheckEventOfGameWhenWinning(t *testing.T) {
-	minesweeper, event := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	minesweeper, event := NewGame(Grid{sampleGridWidth, sampleGridHeight})
 	minesweeper.SetDifficulty(Easy)
 	minesweeper.Play()
 
@@ -429,7 +430,7 @@ func TestCheckEventOfGameWhenWinning(t *testing.T) {
 }
 
 func TestCheckEventOfGameWhenLosing(t *testing.T) {
-	minesweeper, event := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	minesweeper, event := NewGame(Grid{sampleGridWidth, sampleGridHeight})
 	minesweeper.SetDifficulty(Easy)
 	minesweeper.Play()
 
@@ -459,40 +460,40 @@ mainLoop:
 }
 
 func TestGameEasyDifficultyIsSet(t *testing.T) {
-	minesweeper, _ := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	minesweeper, _ := NewGame(Grid{sampleGridWidth, sampleGridHeight})
 	minesweeper.SetDifficulty(Easy)
 	minesweeper.Play()
 
 	game := minesweeper.(*game)
 
 	assert.Equal(t, Easy, game.Difficulty)
-	assert.Equal(t, int(SAMPLE_GRID_WIDTH*SAMPLE_GRID_HEIGHT*easyMultiplier), game.totalBombs())
+	assert.Equal(t, int(sampleGridWidth*sampleGridHeight*easyMultiplier), game.totalBombs())
 }
 
 func TestGameMediumDifficultyIsSet(t *testing.T) {
-	minesweeper, _ := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	minesweeper, _ := NewGame(Grid{sampleGridWidth, sampleGridHeight})
 	minesweeper.SetDifficulty(Medium)
 	minesweeper.Play()
 
 	game := minesweeper.(*game)
 
 	assert.Equal(t, Medium, game.Difficulty)
-	assert.Equal(t, int(SAMPLE_GRID_WIDTH*SAMPLE_GRID_HEIGHT*mediumMultiplier), game.totalBombs())
+	assert.Equal(t, int(sampleGridWidth*sampleGridHeight*mediumMultiplier), game.totalBombs())
 }
 
 func TestGameHardDifficultyIsSet(t *testing.T) {
-	minesweeper, _ := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	minesweeper, _ := NewGame(Grid{sampleGridWidth, sampleGridHeight})
 	minesweeper.SetDifficulty(Hard)
 	minesweeper.Play()
 
 	game := minesweeper.(*game)
 
 	assert.Equal(t, Hard, game.Difficulty)
-	assert.Equal(t, int(SAMPLE_GRID_WIDTH*SAMPLE_GRID_HEIGHT*hardMultiplier), game.totalBombs())
+	assert.Equal(t, int(sampleGridWidth*sampleGridHeight*hardMultiplier), game.totalBombs())
 }
 
 func TestGameOverReturnAllBombLocations(t *testing.T) {
-	minesweeper, _ := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	minesweeper, _ := NewGame(Grid{sampleGridWidth, sampleGridHeight})
 	minesweeper.SetDifficulty(Easy)
 	minesweeper.Play()
 
@@ -513,18 +514,18 @@ mainLoop:
 	assert.Equalf(t, game.totalBombs(), len(bombLocations), "Number of bombs must be %v", game.totalBombs())
 
 	for _, bombLocation := range bombLocations {
-		x := bombLocation.Location.X
-		y := bombLocation.Location.Y
+		x := bombLocation.location.x
+		y := bombLocation.location.y
 		assert.Equalf(t, game.blocks[x][y].Node, Bomb, "Block at %v:%v is not a bomb.", x, y)
 	}
 }
 
 func TestPlayGameWithoutSettingDifficulty(t *testing.T) {
-	minesweeper, _ := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	minesweeper, _ := NewGame(Grid{sampleGridWidth, sampleGridHeight})
 	err := minesweeper.Play()
 
 	assert.Error(t, err)
-	assert.Equal(t, new(UnspecifiedDifficulty), err)
+	assert.Equal(t, new(UnspecifiedDifficultyError), err)
 }
 
 func TestPlayGameWithoutSettingGrid(t *testing.T) {
@@ -535,7 +536,7 @@ func TestPlayGameWithoutSettingGrid(t *testing.T) {
 	assert.Nil(t, minesweeper.(*game).Grid,
 		"For the sake of testing this, we expect Grid is not specified. Therefore this test must fail.")
 	assert.Error(t, err)
-	assert.Equal(t, new(UnspecifiedGrid), err)
+	assert.Equal(t, new(UnspecifiedGridError), err)
 }
 
 func TestVisitedUnknownIsTheFirstInTheListOfDistributedVisits(t *testing.T) {
@@ -556,7 +557,7 @@ func TestVisitedUnknownIsTheFirstInTheListOfDistributedVisits(t *testing.T) {
 }
 
 func TestGameDoesRecordPlayersAction(t *testing.T) {
-	minesweeper, _ := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	minesweeper, _ := NewGame(Grid{sampleGridWidth, sampleGridHeight})
 	minesweeper.SetDifficulty(Medium)
 	minesweeper.Play()
 
@@ -566,8 +567,8 @@ func TestGameDoesRecordPlayersAction(t *testing.T) {
 	maxMoves := 10
 mainLoop:
 	for i := 0; i < maxMoves; i++ {
-		randomX := randomNumber(SAMPLE_GRID_WIDTH)
-		randomY := randomNumber(SAMPLE_GRID_HEIGHT)
+		randomX := randomNumber(sampleGridWidth)
+		randomY := randomNumber(sampleGridHeight)
 		blocks, _ := minesweeper.Visit(randomX, randomY)
 
 		if blocks == nil { // Either already visited block or flagged block
@@ -607,7 +608,7 @@ mainLoop:
 }
 
 func TestRevisitedBlockDoCompletelyOblivious(t *testing.T) {
-	minesweeper, _ := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	minesweeper, _ := NewGame(Grid{sampleGridWidth, sampleGridHeight})
 	minesweeper.SetDifficulty(Easy)
 	minesweeper.Play()
 
@@ -625,7 +626,7 @@ func TestRevisitedBlockDoCompletelyOblivious(t *testing.T) {
 }
 
 func TestBlock_String(t *testing.T) {
-	minesweeper, _ := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	minesweeper, _ := NewGame(Grid{sampleGridWidth, sampleGridHeight})
 	minesweeper.SetDifficulty(Easy)
 	minesweeper.Play()
 
@@ -650,7 +651,7 @@ func TestBlock_String(t *testing.T) {
 
 			assert.Equal(t,
 				fmt.Sprintf("\n\nBlock: \n\tValue\t :\t%v\n\tLocation :\tx:%v y:%v\n\tType\t :\t%v\n\tVisited? :\t%v\n\tFlagged? :\t%v\n\n",
-					value, block.Location.X, block.Location.Y, expectedType, block.visited, block.flagged),
+					value, block.location.x, block.location.y, expectedType, block.visited, block.flagged),
 				block.String())
 		}
 	}
@@ -659,7 +660,7 @@ func TestBlock_String(t *testing.T) {
 func TestAttemptVisitWithoutSettingUpGameEnvironmentOfGrid(t *testing.T) {
 	defer func() {
 		if r := recover(); r != nil {
-			assert.EqualError(t, UnspecifiedGrid{}, r.(error).Error())
+			assert.EqualError(t, UnspecifiedGridError{}, r.(error).Error())
 		} else {
 			assert.Fail(t, "We are expecting an error when grid is not set.")
 		}
@@ -675,13 +676,13 @@ func TestAttemptVisitWithoutSettingUpGameEnvironmentOfGrid(t *testing.T) {
 func TestAttemptVisitWithoutSettingUpGameEnvironmentOfDifficulty(t *testing.T) {
 	defer func() {
 		if r := recover(); r != nil {
-			assert.EqualError(t, UnspecifiedDifficulty{}, r.(error).Error())
+			assert.EqualError(t, UnspecifiedDifficultyError{}, r.(error).Error())
 		} else {
 			assert.Fail(t, "We are expecting an error when difficulty is not set.")
 		}
 	}()
 
-	minesweeper, _ := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	minesweeper, _ := NewGame(Grid{sampleGridWidth, sampleGridHeight})
 	minesweeper.Play()
 
 	minesweeper.Visit(0, 0)
@@ -699,7 +700,7 @@ func TestRepeatThePlayMethodThenReturnError(t *testing.T) {
 
 	minesweeper.Play()
 
-	assert.EqualError(t, minesweeper.Play(), GameAlreadyStarted{}.Error())
+	assert.EqualError(t, minesweeper.Play(), GameAlreadyStartedError{}.Error())
 }
 
 func TestCannotChangeDifficultyOnceGameIsStarted(t *testing.T) {
@@ -708,11 +709,11 @@ func TestCannotChangeDifficultyOnceGameIsStarted(t *testing.T) {
 
 	minesweeper.Play()
 
-	assert.EqualError(t, minesweeper.SetDifficulty(Hard), GameAlreadyStarted{}.Error())
+	assert.EqualError(t, minesweeper.SetDifficulty(Hard), GameAlreadyStartedError{}.Error())
 }
 
 func TestBlock_Visited(t *testing.T) {
-	minesweeper, _ := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	minesweeper, _ := NewGame(Grid{sampleGridWidth, sampleGridHeight})
 	minesweeper.SetDifficulty(Easy)
 	minesweeper.Play()
 
@@ -729,7 +730,7 @@ func TestBlock_Visited(t *testing.T) {
 }
 
 func TestBlock_Flagged(t *testing.T) {
-	minesweeper, _ := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	minesweeper, _ := NewGame(Grid{sampleGridWidth, sampleGridHeight})
 	minesweeper.SetDifficulty(Easy)
 	minesweeper.Play()
 

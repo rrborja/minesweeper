@@ -29,33 +29,71 @@ import (
 	"github.com/rrborja/minesweeper-go/visited"
 )
 
+// Node is the type of the cell's value.
+// Values of this type are minesweeper.Unknown, minesweeper.Bomb and
+// minesweeper.Number
 type Node uint8
 
+// Grid is the game's board size defined by its Grid.Width and Grid.Height
 type Grid struct{ Width, Height int }
 
+// Difficulty is the state of the game's difficulty.
+// Values of this type are minesweeper.Easy, minesweeper.Medium
+// and minesweeper.Hard
 type Difficulty uint8
 
+// Event is a channel type used to receive the game's realtime event.
+// Particular values accepted to this channel are minesweeper.Win and
+// minesweeper.Lose
 type Event chan eventType
 
 type eventType uint8
 type blocks [][]Block
 
 const (
+	// Unknown is the type of the value contained in a minesweeper
+	// cell. It has no value which means no mines are neighbored in
+	// the cell.
 	Unknown Node = 1 << iota >> 1
+
+	// Bomb is the type of the value contained in a minesweeper cell.
+	// This is the equivalent of a mine in the game.
 	Bomb
+
+	// Number is the type of the value contained in a minesweeper
+	// cell. The number indicated the number of mines neighbored in
+	// the cell.
 	Number
 )
 
 const (
 	notSet Difficulty = iota
+
+	// Easy is the difficulty of the game. The amount of mines present
+	// in the game with this difficulty would result to 10% of the
+	// total area of the board's size.
 	Easy
+
+	// Medium is the difficulty of the game. The amount of mines
+	// present in the game with this difficulty would result to 20%
+	// of the total area of the board's size.
 	Medium
+
+	// Hard is the difficulty of the game. The amount of mines present
+	// in the game with this difficulty would result to 50% of the
+	// total area of the board's size.
 	Hard
 )
 
 const (
 	ongoing eventType = iota
+
+	// Win is the game's event. This will trigger whenever all non-mine
+	// cells are visited.
 	Win
+
+	// Lose is the game's event. This will trigger whenever a cell
+	// containing the mine is visited.
 	Lose
 )
 
@@ -65,12 +103,15 @@ const easyMultiplier = 0.1
 const mediumMultiplier = 0.2
 const hardMultiplier = 0.5
 
+// Block stores the information of a particular minesweeper cell. It
+// has the value itself, type of the value in the cell, and the location in
+// the grid. It also reports when a cell is visited or flagged.
 type Block struct {
 	Node
 	Value    int
-	Location struct {
-		X int
-		Y int
+	location struct {
+		x int
+		y int
 	}
 	visited, flagged bool
 }
@@ -85,19 +126,19 @@ type game struct {
 	Event
 	board
 	Difficulty
-	RecordedActions
+	recordedActions
 	*sync.Mutex
 }
 
-// This is the main point of consumption and manipulation of the Minesweeper's
+// Minesweeper is the main point of consumption and manipulation of the Minesweeper's
 // game state. Methods provided by this interface are common use cases to solve
 // a minesweeper game.
 //
-// Any instance derived by this interface is compatible to be casted to the
+// Any instance derived by this interface is compatible for type casting to the
 // rendering.Tracker and visited.StoryTeller interfaces.
 type Minesweeper interface {
 	// Sets or changes the board's size. You can't change the board's size once
-	// the Play() method has been called, otherwise, a GameAlreadyStarted error
+	// the Play() method has been called, otherwise, a GameAlreadyStartedError
 	// will return.
 	//
 	// Nothing will return if the setting the board's size is successful.
@@ -117,10 +158,14 @@ type Minesweeper interface {
 	// "crypto/rand" package.
 	//
 	// An error will return when this method is called twice or more.
+	//
+	// More importantly, Grid size and Difficulty must be specified, otherwise,
+	// you will encounter an UnspecifiedGridError and UnspecifiedDifficultyError,
+	// respectively.
 	Play() error
 
-	// When called, the cell according to the coordinates supplied in the
-	// method argument will marked as flagged. When a particular cell is
+	// When called, the cell, according to the coordinates supplied in the
+	// method argument, will be marked as flagged. When a particular cell is
 	// flagged, the cell in question will prevent from being handled by the
 	// game when the Visit(int, int) method with the same coordinate of the
 	// cell in question is called.
@@ -146,7 +191,7 @@ type Minesweeper interface {
 	//
 	// A mine:
 	// When encountered, the game ends revealing all mines by the returned
-	// []Block array. It will also return an Exploded error as a second return
+	// []Block array. It will also return an ExplodedError as a second return
 	// value. Furthermore, when event handling is supported, a Lose event will
 	// enqueue to the game's even channel buffer. You can remember this buffer
 	// when you originally called the NewGame(...Grid) function and store the second
@@ -163,7 +208,7 @@ type Minesweeper interface {
 	Visit(int, int) ([]Block, error)
 }
 
-// Creates a new minesweeper instance. Note that this only creates the minesweeper
+// NewGame Creates a new minesweeper instance. Note that this only creates the minesweeper
 // instance without the neccessary settings such as the game's difficulty and the
 // game's board size and calling this method will not start the game.
 //
@@ -176,7 +221,7 @@ type Minesweeper interface {
 // As for this method's argument, this method appears to accept an arbitrary
 // number of trailing arguments of type Grid. It can only, however, handle only
 // one Grid instance and the rest of the arguments will be ignored. Although
-// supplying this Grid is also optional, you may encounter an UnspecifiedGrid
+// supplying this Grid is also optional, you may encounter an UnspecifiedGridError
 // panic when calling the Play() method if the Grid is not supplied. You may
 // explicitly supply it by calling the SetGrid(int, int) method.
 func NewGame(grid ...Grid) (Minesweeper, Event) {
@@ -193,7 +238,7 @@ func NewGame(grid ...Grid) (Minesweeper, Event) {
 
 func (game *game) SetGrid(width, height int) error {
 	if game.Grid != nil {
-		return new(GameAlreadyStarted)
+		return new(GameAlreadyStartedError)
 	}
 	game.Grid = &Grid{width, height}
 	createBoard(game)
@@ -219,10 +264,12 @@ func (game *game) Visit(x, y int) ([]Block, error) {
 		}()
 		switch block.Node {
 		case Number:
-			defer game.Add(visited.Record{*block, visited.Number})
+			defer game.add(visited.Record{
+				Position: *block, Action: visited.Number})
 			return []Block{*block}, nil
 		case Bomb:
-			defer game.Add(visited.Record{*block, visited.Bomb})
+			defer game.add(visited.Record{
+				Position: *block, Action: visited.Bomb})
 
 			bombLocations := make([]Block, 0, game.totalBombs()-1)
 
@@ -234,9 +281,10 @@ func (game *game) Visit(x, y int) ([]Block, error) {
 
 			bombLocations = append([]Block{*block}, bombLocations...)
 
-			return bombLocations, &Exploded{struct{ x, y int }{x: x, y: y}}
+			return bombLocations, &ExplodedError{struct{ x, y int }{x: x, y: y}}
 		case Unknown:
-			defer game.Add(visited.Record{*block, visited.Unknown})
+			defer game.add(visited.Record{
+				Position: *block, Action: visited.Unknown})
 			block.visited = false //to avoid infinite recursion, first is to set the base case
 
 			visitedList := list.New()
@@ -258,7 +306,7 @@ func (game *game) Visit(x, y int) ([]Block, error) {
 
 func (game *game) SetDifficulty(difficulty Difficulty) error {
 	if game.Mutex != nil {
-		return new(GameAlreadyStarted)
+		return new(GameAlreadyStartedError)
 	}
 
 	game.Difficulty = difficulty
@@ -276,27 +324,29 @@ func (game *game) SetDifficulty(difficulty Difficulty) error {
 
 func (game *game) Play() error {
 	if game.Mutex != nil {
-		return new(GameAlreadyStarted)
+		return new(GameAlreadyStartedError)
 	}
 	game.Mutex = new(sync.Mutex)
 
 	if game.Difficulty == notSet {
-		return new(UnspecifiedDifficulty)
+		return new(UnspecifiedDifficultyError)
 	}
 	if game.Grid == nil {
-		return new(UnspecifiedGrid)
+		return new(UnspecifiedGridError)
 	}
 	createBombs(game)
 	tallyHints(game)
 	return nil
 }
 
+// X returns the X coordinate of the block in the minesweeper grid
 func (block Block) X() int {
-	return block.Location.X
+	return block.location.x
 }
 
+// Y returns the Y coordinate of the block in the minesweeper grid
 func (block Block) Y() int {
-	return block.Location.Y
+	return block.location.y
 }
 
 // Shifts to the right
@@ -373,7 +423,7 @@ func createBoard(game *game) {
 	}
 	for x, row := range game.blocks {
 		for y := range row {
-			game.blocks[x][y].Location = struct{ X, Y int }{X: x, Y: y}
+			game.blocks[x][y].location = struct{ x, y int }{x: x, y: y}
 		}
 	}
 }
@@ -427,10 +477,10 @@ func (game *game) validateSolution() {
 
 func (game *game) validateGameEnvironment() {
 	if game.Grid == nil {
-		panic(UnspecifiedGrid{})
+		panic(UnspecifiedGridError{})
 	}
 	if game.Difficulty == notSet {
-		panic(UnspecifiedDifficulty{})
+		panic(UnspecifiedDifficultyError{})
 	}
 }
 
@@ -450,10 +500,12 @@ func (game *game) totalNonBombs() int {
 	return game.area() - game.totalBombs()
 }
 
+// Visited responds if a cell is visited or not
 func (block *Block) Visited() bool {
 	return block.visited
 }
 
+// Flagged responds if a cell is visited or not
 func (block *Block) Flagged() bool {
 	return block.flagged
 }
@@ -475,7 +527,7 @@ func (block Block) String() string {
 	}
 
 	return fmt.Sprintf("\n\nBlock: \n\tValue\t :\t%v\n\tLocation :\tx:%v y:%v\n\tType\t :\t%v\n\tVisited? :\t%v\n\tFlagged? :\t%v\n\n",
-		value, block.Location.X, block.Location.Y, nodeType, block.visited, block.flagged)
+		value, block.location.x, block.location.y, nodeType, block.visited, block.flagged)
 }
 
 func randomNumber(max int) int {

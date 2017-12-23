@@ -102,7 +102,7 @@ func TestBothBombsAndHintsDoNotShareSameLocations(t *testing.T) {
 }
 
 func TestRecentPlayersMove(t *testing.T) {
-	minesweeper, _ := NewGame(Grid{SAMPLE_GRID_WIDTH, SAMPLE_GRID_HEIGHT})
+	minesweeper, _ := NewGame(Grid{sampleGridWidth, sampleGridHeight})
 	minesweeper.SetDifficulty(Medium)
 	minesweeper.Play()
 
@@ -112,8 +112,8 @@ func TestRecentPlayersMove(t *testing.T) {
 
 	maxMoves := 10
 	for i := 0; i < maxMoves; i++ {
-		randomX := randomNumber(SAMPLE_GRID_WIDTH)
-		randomY := randomNumber(SAMPLE_GRID_HEIGHT)
+		randomX := randomNumber(sampleGridWidth)
+		randomY := randomNumber(sampleGridHeight)
 		blocks, err := minesweeper.Visit(randomX, randomY)
 
 		if len(blocks) == 0 { // Either already visited block or flagged block

@@ -24,7 +24,7 @@ import (
 	"github.com/rrborja/minesweeper-go/visited"
 )
 
-type RecordedActions struct {
+type recordedActions struct {
 	*visited.History
 }
 
@@ -60,14 +60,14 @@ func (game *game) HintLocations() []rendering.Position {
 }
 
 func (game *game) History() *visited.History {
-	return game.RecordedActions.History
+	return game.recordedActions.History
 }
 
 func (game *game) LastAction() visited.Record {
-	return game.RecordedActions.History.Record
+	return game.recordedActions.History.Record
 }
 
-func (game *RecordedActions) Add(record visited.Record) {
+func (game *recordedActions) add(record visited.Record) {
 	if game.History == nil {
 		game.History = new(visited.History)
 	} else {
