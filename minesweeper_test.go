@@ -741,6 +741,25 @@ func TestVisitedFlaggedBlock(t *testing.T) {
 	}
 }
 
+func TestUnflagBlock(t *testing.T) {
+	minesweeper, _ := NewGame(Grid{sampleGridWidth, sampleGridHeight})
+	minesweeper.SetDifficulty(Easy)
+	minesweeper.Play()
+
+	game := minesweeper.(*game)
+
+	for x, row := range game.blocks {
+		for y, block := range row {
+			if block.Node == Bomb && !block.flagged {
+				minesweeper.Flag(x, y)
+				assert.True(t, game.blocks[x][y].flagged)
+				minesweeper.Flag(x, y)
+				assert.False(t, game.blocks[x][y].flagged)
+			}
+		}
+	}
+}
+
 func count(blocks blocks, width, height, x, y int) (has int) {
 	if x >= 0 && y >= 0 &&
 		x < width && y < height &&

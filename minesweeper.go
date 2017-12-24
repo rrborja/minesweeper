@@ -248,7 +248,7 @@ func (game *game) SetGrid(width, height int) error {
 func (game *game) Flag(x, y int) {
 	blockPtr := &game.blocks[x][y]
 	if !blockPtr.visited {
-		game.blocks[x][y].flagged = true
+		blockPtr.flagged = !blockPtr.flagged
 	}
 }
 
