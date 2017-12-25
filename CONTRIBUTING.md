@@ -22,18 +22,18 @@ This project Minesweeper API is released under the [GNU General Public License v
 
 Report a Bug
 ============
-Bug fixes are really not fun to play with, compared to creating functionalities. However, we must always recognize that, in time, there will be bugs. Bug fixes help close the missing gaps of the software that made it vulnerable for exploits and opportunistic unusual behaviors. Let us know if there is a bug by creating an issue in the Minesweeper GitHub repository.
+Bug fixes are really not fun to play with, compared to creating functionalities. However, we must always recognize that, in time, there will be bugs. Bug fixes help close the missing gaps of the software that made them vulnerable for exploits and opportunistic unusual behaviors. Let us know if there is a bug by creating an issue in the Minesweeper GitHub repository.
 
 Creating an Issue
 =================
-Before submitting an issue, make sure that:
-* at the time of the issue present in the project, the source code must be at the latest revision.
+Before submitting an issue, ensure that:
+* at the time of the issue present in the project, the source code must be at its latest revision.
 * the issue has not been described in the [issue tracker](https://github.com/rrborja/minesweeper/issues) yet.
 
 Suggest a Functionality
 =======================
 Adding a functionality is not only a fun task but it is always a serious task to become involved with. As such, there will be a lot of discipline that both of us must expect. The following guidelines will help us achieve the best overall outcome:
-1. Every functionality must be coupled with test-driven development.  
+1. Every feature development must be coupled with test-driven development.  
    * If the functionality is not yet existed, test cases must be created first and ensure the test fails at first. The reason behind is that when a test fails after performing a testing scenario, we determine that the functionality has not been  implemented or, better yet, the code for that functionality is not in the codebase yet. When it does fail, it will now become your opportunity to create (a.k.a refactor) that functionality to the actual codebase. The second test then must pass.
 2. Your naming conventions must be properly aligned to this [guideline](https://golang.org/doc/effective_go.html).
 3. Your exported methods, functions, types, variables and constants must have their own Godoc-style comments. Comments should be meaningful and helpful in order to provide other contributors enough idea how your code works.

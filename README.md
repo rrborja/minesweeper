@@ -1,8 +1,119 @@
-# Minesweeper-Go
+# Minesweeper API
+
+[![GoDoc](https://godoc.org/github.com/rrborja/minesweeper-go?status.svg)](https://godoc.org/github.com/rrborja/minesweeper-go)
+[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 
 [![Build Status](https://travis-ci.org/rrborja/minesweeper-go.svg?branch=master)](https://travis-ci.org/rrborja/minesweeper-go)
 [![Coverage Status](https://coveralls.io/repos/github/rrborja/minesweeper-go/badge.svg?branch=master)](https://coveralls.io/github/rrborja/minesweeper-go?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/rrborja/minesweeper-go)](https://goreportcard.com/report/github.com/rrborja/minesweeper-go)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/87ca3506f37248bc901e122ce0f57d8a)](https://www.codacy.com/app/rrborja/minesweeper-go?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=rrborja/minesweeper-go&amp;utm_campaign=Badge_Grade)
 [![Maintainability](https://api.codeclimate.com/v1/badges/023c630044d1398afc79/maintainability)](https://codeclimate.com/github/rrborja/minesweeper-go/maintainability)
-[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+
+The Minesweeper API is the Application Programming Interface of the minesweeper game. The game's logic is embedded in this API itself with zero third-party libraries involved. Although, there is much no use of this game as a library, you may find this useful for educational purposes because it contains the implementation of the minesweeper game backed with coding vetting networks and test-driven development. The idea of this project is to provide you how this project integrates with DevOps, how it can be consumed with REST API, and how the code can achieve high code quality.
+
+---
+
+Install
+=======
+
+`go get -u github.com/rrborja/minesweeper`
+
+Usage
+=====
+
+### Creating the instance
+Create the instance of the game by calling `minesweeper.NewGame()` method. The method can accept an arbitrary number of arguments but only one argument can be processed and the rest are ignored. The method accepts the `Grid` argument to set the board's size. For example, `Grid{Width: 15, Height: 10}`
+
+> **Setting the Grid:**
+
+> If the `Grid` is not provided in the `NewGame()` arguments, you must explicitly provide the board's `Grid` by calling `SetGrid()` of the game's instance.
+
+`NewGame()` returns two values: the instance itself and the event handler. The instance is the instance of the `Minesweeper` interface that has methods as use cases to solve a minesweeper game. The event handler is a buffer channel that you can use to create a separate goroutine and listen for game events. Such events are `minesweeper.Win` and `minesweeper.Lose`.
+
+### Setting the difficulty
+Set the difficulty of the game by calling `SetDifficulty()` of the game's instance. Values accepts by this method as arguments are `minesweeper.Easy`, `minesweeper.Medium` and `minesweeper.Hard`.
+
+### Start the game
+Call the `Play()` of the game's instance to generate the location of mines and to start the game. You may arrive errors such as `UnspecifiedGridError` if no grid is set, `UnspecifiedDifficultyError` if no difficulty is set, and `GameAlreadyStartedError` if the `Play()` has already been called.
+
+### Visit a cell
+Call the `Visit()` of the game's instance to visit the cell. The method will accept two arguments of the type `int` which are represented by the xy-coordinate of the game's board to which the location of the cell in the board is to be visited.  
+> **The method will return two values:**
+> - a slice of cells that has been visited by the player and by the game
+> - the error `ExplodedError` indicating whether a visited cell reveals a mine.
+
+When you receive the `ExplodedError` error, the game ends. Calling Visit() method may produce nil pointer dereference panic because after the game is over, the instance are automatically garbage collected.
+
+The slice being returned may contain multiple values. If it's single element slice, that means the visited cell is a warning number indicating how many mines neighbored to the visited cell. If it's a multiple element slice, that means the visited cell is an unknown number and neighboring cells are recursively visited until a numbered cell is reached. The first element of the slice will always be the original player's visited cell.
+
+### Flag a cell
+Call `Flag()` of the game's instance to mark an unprobed cell. Doing this will prevent the `Visit()` method from visiting the marked cell.
+
+> **Pro tip:**  
+> - If you visit an already visited numbered cell again and the number of neighboring cells that have been flagged equals to the number of the visited cell, the game will automatically visit all unprobed neighbored cells by returning the slice containing those cells. Just make the players ensure that they have correctly marked the cell deduced it has the mine, otherwise, the game will end if the cell is incorrectly marked.
+
+Example
+=======
+
+```go
+package main
+
+import (
+    "fmt"
+    "os"
+
+    "github.com/rrborja/minesweeper"
+)
+
+func Listen(event Event) {
+    select event {
+    case <- minesweeper.Win:
+        fmt.Println("You won the game!")
+    case <- minesweeper.Lose:
+        fmt.Println("Game over!")
+    default:
+        panic("Unexpected event")
+    }
+    os.Exit(0)
+}
+
+func main() {
+    game, event := minesweeper.NewGame(Grid{Width: 15, Height: 10})
+    game.SetDifficulty(Easy)
+    game.Play()
+
+    go Listen(event)
+
+    reader := bufio.NewReader(os.Stdin)
+    for {
+        var x, y int
+        fmt.Println("Enter the X-coordinate to visit a cell: ")
+        fmt.Scan(&x)
+        fmt.Println("Enter the Y-coordinate to visit a cell: ")
+        fmt.Scan(&y)
+
+        visitedCells, err := game.Visit(x, y)
+        if err != nil {
+            fmt.Printf("Mine is revealed at %v:%v", x, y)
+        }
+
+        for _, cell := range visitedCells {
+            fmt.Print("[%v:%v] ", cell.X(), cell.Y())
+        }
+    }
+}
+```
+
+TODO
+====
+1. Print the game's visual state of the board in console
+
+License
+=======
+
+This project Minesweeper API is released under the [GNU General Public License v2.0](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
+
+Contributing
+============
+
+Please see the [CONTRIBUTING.md](https://github.com/rrborja/minesweeper/blob/master/CONTRIBUTING.md) file for details.
