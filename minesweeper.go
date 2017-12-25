@@ -420,18 +420,17 @@ func createBombs(game *game) {
 }
 
 func tallyHints(game *game) {
-	for x, row := range game.blocks {
-		for y, block := range row {
-			if block.Node == Bomb {
-				game.traverseAdjacentCells(x, y, func(cell *Block) {
-					if cell.Node != Bomb {
-						cell.Node = Number
-						cell.Value++
-					}
-				})
-			}
+	game.iterateBlocks(func(block *Block) bool {
+		if block.Node == Bomb {
+			game.traverseAdjacentCells(block.X(), block.Y(), func(cell *Block) {
+				if cell.Node != Bomb {
+					cell.Node = Number
+					cell.Value++
+				}
+			})
 		}
-	}
+		return true
+	})
 }
 
 func createBoard(game *game) {
