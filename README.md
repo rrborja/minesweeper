@@ -10,7 +10,7 @@
 
 The Minesweeper API is the Application Programming Interface of the minesweeper game. The game's logic is embedded in this API itself with zero third-party libraries involved. 
 
-Although, there is much no use of this game as a library, you may find this useful for educational purposes because it contains the implementation of the minesweeper game backed with coding vetting networks and test-driven development. The idea of this project is to provide you how this project integrates with DevOps, how it can be consumed with REST API, and how the code can achieve high code quality.
+Although, there is much no use of this game as a library, you may find this useful for educational purposes because it contains the implementation of the minesweeper game backed with coding vetting frameworks and test-driven development. The idea of this project is to provide you how this project integrates with DevOps, how it can be consumed with REST API, and how the code can achieve high code quality.
 
 ---
 
@@ -41,17 +41,16 @@ Usage
 ### Creating the Instance
 Create the instance of the game by calling `minesweeper.NewGame()` method. The method can accept an arbitrary number of arguments but only one argument can be processed and the rest are ignored. The method accepts the `Grid` argument to set the board's size. For example, `Grid{Width: 15, Height: 10}`
 
-> **Setting the Grid:**
-
+> **Setting the Grid:**  
 > If the `Grid` is not provided in the `NewGame()` arguments, you must explicitly provide the board's `Grid` by calling `SetGrid()` of the game's instance.
 
-`NewGame()` returns two values: the instance itself and the event handler. The instance is the instance of the `Minesweeper` interface that has methods as use cases to solve a minesweeper game. The event handler is a buffer channel that you can use to create a separate goroutine and listen for game events. Such events are `minesweeper.Win` and `minesweeper.Lose`.
+`NewGame()` returns two values: the instance itself and the event handler. The instance is the instance of the `Minesweeper` interface that has methods as use cases to solve a minesweeper game. The event handler is a buffered channel that you can use to create a separate goroutine and listen for game events. Such events are `minesweeper.Win` and `minesweeper.Lose`.
 
 ### Setting the Difficulty
-Set the difficulty of the game by calling `SetDifficulty()` of the game's instance. Values accepts by this method as arguments are `minesweeper.Easy`, `minesweeper.Medium` and `minesweeper.Hard`.
+Set the difficulty of the game by calling `SetDifficulty()` of the game's instance. Values accepted by this method as arguments are `minesweeper.Easy`, `minesweeper.Medium` and `minesweeper.Hard`.
 
 ### Start the Game
-Call the `Play()` of the game's instance to generate the location of mines and to start the game. You may arrive errors such as `UnspecifiedGridError` if no grid is set, `UnspecifiedDifficultyError` if no difficulty is set, and `GameAlreadyStartedError` if the `Play()` has already been called.
+Call the `Play()` of the game's instance to generate the location of mines and to start the game. You may encounter errors such as `UnspecifiedGridError` if no grid is set, `UnspecifiedDifficultyError` if no difficulty is set, and `GameAlreadyStartedError` if the `Play()` has already been called twice or more.
 
 ### Visit a Cell
 Call the `Visit()` of the game's instance to visit the cell. The method will accept two arguments of the type `int` which are represented by the xy-coordinate of the game's board to which the location of the cell in the board is to be visited.  
@@ -59,15 +58,15 @@ Call the `Visit()` of the game's instance to visit the cell. The method will acc
 > - a slice of cells that has been visited by the player and by the game
 > - the error `ExplodedError` indicating whether a visited cell reveals a mine.
 
-When you receive the `ExplodedError` error, the game ends. Calling Visit() method may produce nil pointer dereference panic because after the game is over, the instance are automatically garbage collected.
+When you receive the `ExplodedError` error, the game ends. Calling `Visit()` after a game ended may produce a nil pointer dereference panic. It does happen due to that the game is over, the game's instance is automatically garbage collected.
 
-The slice being returned may contain multiple values. If it's single element slice, that means the visited cell is a warning number indicating how many mines neighbored to the visited cell. If it's a multiple element slice, that means the visited cell is an unknown number and neighboring cells are recursively visited until a numbered cell is reached. The first element of the slice will always be the original player's visited cell.
+The slice being returned may contain multiple values. If it's a single element slice, that means the visited cell is a warning number indicating the number of mines neighbored to the visited cell. If it's a multiple element slice, that means the visited cell is an unknown number and neighboring cells are recursively visited until any numbered cell is reached. The first element of the slice will always be the original player's visited cell.
 
 ### Flag a cell
 Call `Flag()` of the game's instance to mark an unprobed cell. Doing this will prevent the `Visit()` method from visiting the marked cell.
 
 > **Pro tip:**  
-> - If you visit an already visited numbered cell again and the number of neighboring cells that have been flagged equals to the number of the visited cell, the game will automatically visit all unprobed neighbored cells by returning the slice containing those cells. Just make the players ensure that they have correctly marked the cell deduced it has the mine, otherwise, the game will end if the cell is incorrectly marked.
+> - If you visit an already visited numbered cell again and the number of neighboring cells that have been flagged equals to the number of the visited cell, the game will automatically visit all unprobed neighbored cells by returning the slice containing those cells. Just make the players ensure that they have correctly marked the cells deduced that they have mines, otherwise, the game will end if the cell is incorrectly marked.
 
 Example
 =======
@@ -124,6 +123,7 @@ func main() {
 TODO
 ====
 1. Print the game's visual state of the board in console
+2. Provide a way to allow the game's API to be used for REST API
 
 License
 =======
