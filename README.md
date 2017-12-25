@@ -8,7 +8,25 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/87ca3506f37248bc901e122ce0f57d8a)](https://www.codacy.com/app/rrborja/minesweeper-go?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=rrborja/minesweeper-go&amp;utm_campaign=Badge_Grade)
 [![Maintainability](https://api.codeclimate.com/v1/badges/023c630044d1398afc79/maintainability)](https://codeclimate.com/github/rrborja/minesweeper-go/maintainability)
 
-The Minesweeper API is the Application Programming Interface of the minesweeper game. The game's logic is embedded in this API itself with zero third-party libraries involved. Although, there is much no use of this game as a library, you may find this useful for educational purposes because it contains the implementation of the minesweeper game backed with coding vetting networks and test-driven development. The idea of this project is to provide you how this project integrates with DevOps, how it can be consumed with REST API, and how the code can achieve high code quality.
+The Minesweeper API is the Application Programming Interface of the minesweeper game. The game's logic is embedded in this API itself with zero third-party libraries involved. 
+
+Although, there is much no use of this game as a library, you may find this useful for educational purposes because it contains the implementation of the minesweeper game backed with coding vetting networks and test-driven development. The idea of this project is to provide you how this project integrates with DevOps, how it can be consumed with REST API, and how the code can achieve high code quality.
+
+---
+
+* [Install](#install)
+* [Usage](#usage)
+  * [Creating the Instance](#creating-the-instance)
+  * [Setting the Grid](#setting-the-grid)
+  * [Setting the Difficulty](#setting-the-difficulty)
+  * [Start the Game](#start-the-game)
+  * [Visit a Cell](#visit-a-cell)
+  * [Flag a cell](#flag-a-cell)
+* [Example](#example)
+* [TODO](#todo)
+* [License](#license)
+* [Contributing](#contributing)
+
 
 ---
 
@@ -20,7 +38,7 @@ Install
 Usage
 =====
 
-### Creating the instance
+### Creating the Instance
 Create the instance of the game by calling `minesweeper.NewGame()` method. The method can accept an arbitrary number of arguments but only one argument can be processed and the rest are ignored. The method accepts the `Grid` argument to set the board's size. For example, `Grid{Width: 15, Height: 10}`
 
 > **Setting the Grid:**
@@ -29,13 +47,13 @@ Create the instance of the game by calling `minesweeper.NewGame()` method. The m
 
 `NewGame()` returns two values: the instance itself and the event handler. The instance is the instance of the `Minesweeper` interface that has methods as use cases to solve a minesweeper game. The event handler is a buffer channel that you can use to create a separate goroutine and listen for game events. Such events are `minesweeper.Win` and `minesweeper.Lose`.
 
-### Setting the difficulty
+### Setting the Difficulty
 Set the difficulty of the game by calling `SetDifficulty()` of the game's instance. Values accepts by this method as arguments are `minesweeper.Easy`, `minesweeper.Medium` and `minesweeper.Hard`.
 
-### Start the game
+### Start the Game
 Call the `Play()` of the game's instance to generate the location of mines and to start the game. You may arrive errors such as `UnspecifiedGridError` if no grid is set, `UnspecifiedDifficultyError` if no difficulty is set, and `GameAlreadyStartedError` if the `Play()` has already been called.
 
-### Visit a cell
+### Visit a Cell
 Call the `Visit()` of the game's instance to visit the cell. The method will accept two arguments of the type `int` which are represented by the xy-coordinate of the game's board to which the location of the cell in the board is to be visited.  
 > **The method will return two values:**
 > - a slice of cells that has been visited by the player and by the game
