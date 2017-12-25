@@ -26,7 +26,7 @@ import (
 )
 
 func TestExploded_Error(t *testing.T) {
-	err := ExplodedError{struct{ x, y int }{x: 3, y: 9}}
+	err := ExplodedError{x: 3, y: 9}
 	assert.EqualError(t, err, "Game over at X=3 Y=9")
 }
 

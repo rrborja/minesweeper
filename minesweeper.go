@@ -259,6 +259,35 @@ func (game *game) Visit(x, y int) ([]Block, error) {
 	defer game.Unlock()
 
 	block := &game.blocks[x][y]
+	if block.Node == Number && block.visited {
+		countedFlaggedBlock := 0
+		resultedBlocks := make([]Block, 0)
+		blocksToBeVisited := make([]*Block, 0)
+
+		game.traverseAdjacentCells(x, y, func(cell *Block) {
+			if cell.flagged {
+				countedFlaggedBlock++
+			} else {
+				blocksToBeVisited = append(blocksToBeVisited, cell)
+			}
+		})
+
+		if countedFlaggedBlock == block.Value {
+			for _, block := range blocksToBeVisited {
+				blocks, err := game.visit(block.X(), block.Y())
+				if err != nil {
+					return blocks, err
+				}
+				resultedBlocks = append(resultedBlocks, blocks...)
+			}
+		}
+		return resultedBlocks, nil
+	}
+	return game.visit(x, y)
+}
+
+func (game *game) visit(x, y int) ([]Block, error) {
+	block := &game.blocks[x][y]
 
 	if !block.flagged && !block.visited {
 		block.visited = true
@@ -284,7 +313,7 @@ func (game *game) Visit(x, y int) ([]Block, error) {
 
 			bombLocations = append([]Block{*block}, bombLocations...)
 
-			return bombLocations, &ExplodedError{struct{ x, y int }{x: x, y: y}}
+			return bombLocations, &ExplodedError{x: x, y: y}
 		case Unknown:
 			defer game.add(visited.Record{
 				Position: *block, Action: visited.Unknown})
@@ -391,32 +420,45 @@ func createBombs(game *game) {
 }
 
 func tallyHints(game *game) {
-	width := game.Width
-	height := game.Height
-
-	tally := func(blocks blocks, x, y int) {
-		if x >= 0 && y >= 0 &&
-			x < width && y < height &&
-			blocks[x][y].Node != Bomb {
-			blocks[x][y].Node = Number
-			blocks[x][y].Value++
-		}
-	}
-
 	for x, row := range game.blocks {
 		for y, block := range row {
 			if block.Node == Bomb {
-				tally(game.blocks, x-1, y-1)
-				tally(game.blocks, x-1, y)
-				tally(game.blocks, x-1, y+1)
-				tally(game.blocks, x, y-1)
-				tally(game.blocks, x, y+1)
-				tally(game.blocks, x+1, y-1)
-				tally(game.blocks, x+1, y)
-				tally(game.blocks, x+1, y+1)
+				game.traverseAdjacentCells(x, y, func(cell *Block) {
+					if cell.Node != Bomb {
+						cell.Node = Number
+						cell.Value++
+					}
+				})
 			}
 		}
 	}
+
+	// width := game.Width
+	// height := game.Height
+
+	// tally := func(blocks blocks, x, y int) {
+	// 	if x >= 0 && y >= 0 &&
+	// 		x < width && y < height &&
+	// 		blocks[x][y].Node != Bomb {
+	// 		blocks[x][y].Node = Number
+	// 		blocks[x][y].Value++
+	// 	}
+	// }
+
+	// for x, row := range game.blocks {
+	// 	for y, block := range row {
+	// 		if block.Node == Bomb {
+	// 			tally(game.blocks, x-1, y-1)
+	// 			tally(game.blocks, x-1, y)
+	// 			tally(game.blocks, x-1, y+1)
+	// 			tally(game.blocks, x, y-1)
+	// 			tally(game.blocks, x, y+1)
+	// 			tally(game.blocks, x+1, y-1)
+	// 			tally(game.blocks, x+1, y)
+	// 			tally(game.blocks, x+1, y+1)
+	// 		}
+	// 	}
+	// }
 }
 
 func createBoard(game *game) {
@@ -484,6 +526,26 @@ func (game *game) validateGameEnvironment() {
 	}
 	if game.Difficulty == notSet {
 		panic(UnspecifiedDifficultyError{})
+	}
+}
+
+func (game *game) traverseAdjacentCells(x, y int, do func(*Block)) {
+	game.recursivelyTraverseAdjacentCells(x-1, y-1, do)
+	game.recursivelyTraverseAdjacentCells(x, y-1, do)
+	game.recursivelyTraverseAdjacentCells(x+1, y-1, do)
+	game.recursivelyTraverseAdjacentCells(x-1, y, do)
+	game.recursivelyTraverseAdjacentCells(x+1, y, do)
+	game.recursivelyTraverseAdjacentCells(x-1, y+1, do)
+	game.recursivelyTraverseAdjacentCells(x, y+1, do)
+	game.recursivelyTraverseAdjacentCells(x+1, y+1, do)
+}
+
+func (game *game) recursivelyTraverseAdjacentCells(x, y int, do func(*Block)) {
+	width := game.Width
+	height := game.Height
+
+	if x >= 0 && y >= 0 && x < width && y < height {
+		do(&game.blocks[x][y])
 	}
 }
 

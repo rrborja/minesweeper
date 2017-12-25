@@ -23,11 +23,11 @@ import "fmt"
 
 // ExplodedError is the error type used to handle a situation when a mine is visited
 type ExplodedError struct {
-	location struct{ x, y int }
+	x, y int
 }
 
 func (Exploded ExplodedError) Error() string {
-	return fmt.Sprintf("Game over at X=%v Y=%v", Exploded.location.x, Exploded.location.y)
+	return fmt.Sprintf("Game over at X=%v Y=%v", Exploded.x, Exploded.y)
 }
 
 // GameAlreadyStartedError is the error type used to handle errors when attempting

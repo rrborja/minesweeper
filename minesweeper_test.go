@@ -295,7 +295,7 @@ func TestVisitedBlocksWhenBlockIsABomb(t *testing.T) {
 			if block.Node == Bomb {
 				_, err := minesweeper.Visit(x, y)
 				assert.Error(t, err)
-				assert.EqualError(t, err, (&ExplodedError{struct{ x, y int }{x: x, y: y}}).Error())
+				assert.EqualError(t, err, (&ExplodedError{x: x, y: y}).Error())
 			}
 		}
 	}
@@ -554,7 +554,8 @@ mainLoop:
 
 		switch len(blocks) {
 		case 0: // Either already visited block or flagged block
-			panic("Unexpected")
+			// panic("Unexpected")
+			// TODO: Action for auto visit
 		case 1: // Number
 			switch blocks[0].Node {
 			case Bomb:
@@ -584,23 +585,25 @@ mainLoop:
 
 }
 
-func TestRevisitedBlockDoCompletelyOblivious(t *testing.T) {
-	minesweeper, _ := NewGame(Grid{sampleGridWidth, sampleGridHeight})
-	minesweeper.SetDifficulty(Easy)
-	minesweeper.Play()
+// Test cancelled by virtue of auto filling a visited block. Cannot be oblivious as it will do something
+//
+// func TestRevisitedBlockDoCompletelyOblivious(t *testing.T) {
+// 	minesweeper, _ := NewGame(Grid{sampleGridWidth, sampleGridHeight})
+// 	minesweeper.SetDifficulty(Easy)
+// 	minesweeper.Play()
 
-	game := minesweeper.(*game)
+// 	game := minesweeper.(*game)
 
-	for x, row := range game.blocks {
-		for y, block := range row {
-			if block.Node != Bomb {
-				minesweeper.Visit(x, y)
-				result, _ := minesweeper.Visit(x, y) // Visit again. Point of this test.
-				assert.Nil(t, result, "Game must be oblivious of a visited block.")
-			}
-		}
-	}
-}
+// 	for x, row := range game.blocks {
+// 		for y, block := range row {
+// 			if block.Node != Bomb {
+// 				minesweeper.Visit(x, y)
+// 				result, _ := minesweeper.Visit(x, y) // Visit again. Point of this test.
+// 				assert.Nil(t, result, "Game must be oblivious of a visited block.")
+// 			}
+// 		}
+// 	}
+// }
 
 func TestBlock_String(t *testing.T) {
 	minesweeper, _ := NewGame(Grid{sampleGridWidth, sampleGridHeight})
@@ -758,6 +761,119 @@ func TestUnflagBlock(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestAutoVisitNeighboringUnprobedNumbersAfterMineFlagged(t *testing.T) {
+	minesweeper, event := NewGame(Grid{sampleGridWidth, sampleGridHeight})
+	minesweeper.SetDifficulty(Easy)
+	minesweeper.Play()
+
+	go func() {
+		if <-event == Lose {
+			assert.FailNow(t, "Broken test")
+		}
+	}()
+
+	game := minesweeper.(*game)
+
+	for x, row := range game.blocks {
+		for y, block := range row {
+			if block.Node == Number && !block.visited && !block.flagged {
+				minesweeper.Visit(x, y)
+
+				bombsNearby := make([]*Block, 0, 8)
+				nonBombs := make([]*Block, 0, 8)
+
+				game.traverseAdjacentCells(x, y, func(cell *Block) {
+					bombsNearby, nonBombs = appendBomb(game, cell.X(), cell.Y(), bombsNearby, nonBombs)
+				})
+
+				for _, bomb := range bombsNearby {
+					minesweeper.Flag(bomb.X(), bomb.Y())
+				}
+
+				// Visit a visited cell again after flagging all neighboring mine to auto visit neighboring cells
+				minesweeper.Visit(x, y)
+
+				for _, nonBomb := range nonBombs {
+
+					assert.True(t, nonBomb.visited)
+
+				}
+				return
+			}
+		}
+	}
+}
+
+func TestAutoVisitWithWronglyFlaggedBomb(t *testing.T) {
+	minesweeper, _ := NewGame(Grid{10, 10})
+	minesweeper.SetDifficulty(Easy)
+	minesweeper.Play()
+
+	game := minesweeper.(*game)
+
+	for x, row := range game.blocks {
+		for y, block := range row {
+
+			if block.Node == Number && !block.visited && !block.flagged {
+				minesweeper.Visit(x, y)
+
+				var numberCellToFlag *Block
+				var bombCellToNotFlag *Block
+
+				game.traverseAdjacentCells(x, y, func(cell *Block) {
+					if numberCellToFlag == nil && cell.Node == Number {
+						minesweeper.Flag(cell.X(), cell.Y())
+						numberCellToFlag = cell
+					} else if bombCellToNotFlag == nil && cell.Node == Bomb {
+						bombCellToNotFlag = cell
+					} else if cell.Node == Bomb {
+						minesweeper.Flag(cell.X(), cell.Y())
+					}
+				})
+
+				_, err := minesweeper.Visit(x, y)
+				assert.Error(t, err)
+				if err != nil {
+					assert.IsType(t, &ExplodedError{}, err)
+					return // Since the game is over, we also need to stop the test
+				}
+			}
+		}
+	}
+}
+
+func TestDoNotAutoVisitIfAllNeighboringBombsAreNotFlagged(t *testing.T) {
+	minesweeper, _ := NewGame(Grid{sampleGridWidth, sampleGridHeight})
+	minesweeper.SetDifficulty(Easy)
+	minesweeper.Play()
+
+	game := minesweeper.(*game)
+
+	for x, row := range game.blocks {
+		for y, block := range row {
+			if block.Node == Number && !block.visited && !block.flagged {
+				minesweeper.Visit(x, y)
+
+				// Visit again
+				blocks, _ := minesweeper.Visit(x, y)
+
+				assert.Empty(t, blocks)
+			}
+		}
+	}
+}
+
+func appendBomb(game *game, x, y int, bombs []*Block, nonBombs []*Block) ([]*Block, []*Block) {
+	if x >= 0 && y >= 0 &&
+		x < game.Width && y < game.Height {
+		if game.blocks[x][y].Node == Bomb {
+			return append(bombs, &game.blocks[x][y]), nonBombs
+		}
+		return bombs, append(nonBombs, &game.blocks[x][y])
+	}
+	return bombs, nonBombs
 }
 
 func count(blocks blocks, width, height, x, y int) (has int) {
