@@ -48,13 +48,12 @@ func (game *game) BombLocations() []rendering.Position {
 func (game *game) HintLocations() []rendering.Position {
 	hintPlacements := make([]rendering.Position, 0) // TODO: Improve this performance
 
-	for _, row := range game.blocks {
-		for _, block := range row {
-			if block.Node == Number {
-				hintPlacements = append(hintPlacements, block)
-			}
+	game.iterateBlocks(func(block *Block) bool {
+		if block.Node == Number {
+			hintPlacements = append(hintPlacements, *block)
 		}
-	}
+		return true
+	})
 
 	return hintPlacements
 }
