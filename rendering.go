@@ -32,14 +32,13 @@ func (game *game) BombLocations() []rendering.Position {
 	bombPlacements := make([]rendering.Position, int(float32(game.Height*game.Width)*game.difficultyMultiplier))
 
 	var counter int
-	for _, row := range game.blocks {
-		for _, block := range row {
-			if block.Node == Bomb {
-				bombPlacements[counter] = block
-				counter++
-			}
+	game.iterateBlocks(func(block *Block) bool {
+		if block.Node == Bomb {
+			bombPlacements[counter] = *block
+			counter++
 		}
-	}
+		return true
+	})
 
 	return bombPlacements
 }
