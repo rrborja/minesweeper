@@ -474,17 +474,16 @@ func autoRevealUnmarkedBlock(game *game, visitedBlocks *list.List, x, y int) {
 
 func (game *game) validateSolution() {
 	var visitTally int
-	for _, row := range game.blocks {
-		for _, block := range row {
-			if block.Node != Bomb && block.visited {
-				visitTally++
-			} else if block.Node == Bomb && block.visited {
-				game.Event <- Lose
-				return
-			}
+	iterateNotInterrupted := game.iterateBlocks(func(block *Block) bool {
+		if block.Node != Bomb && block.visited {
+			visitTally++
+		} else if block.Node == Bomb && block.visited {
+			game.Event <- Lose
+			return false
 		}
-	}
-	if visitTally == game.totalNonBombs() {
+		return true
+	})
+	if iterateNotInterrupted && visitTally == game.totalNonBombs() {
 		game.Event <- Win
 	}
 }
@@ -516,6 +515,19 @@ func (game *game) recursivelyTraverseAdjacentCells(x, y int, do func(*Block)) {
 	if x >= 0 && y >= 0 && x < width && y < height {
 		do(&game.blocks[x][y])
 	}
+}
+
+func (game *game) iterateBlocks(do func(*Block) bool) bool {
+	success := true
+mainLoop:
+	for _, row := range game.blocks {
+		for _, block := range row {
+			if success = do(&game.blocks[block.X()][block.Y()]); !success {
+				break mainLoop
+			}
+		}
+	}
+	return success
 }
 
 func (game *game) area() int {
