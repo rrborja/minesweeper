@@ -22,7 +22,7 @@ This project Minesweeper API is released under the [GNU General Public License v
 
 Report a Bug
 ============
-Bug fixes are really not fun to play with, compared to creating functionalities. However, we must always recognize that, in time, there will be bugs. Bug fixes help close the missing gaps of the software that made it vulnerable for exploits and unusual behaviors. Let us know if there is a bug by creating an issue in the Minesweeper GitHub repository.
+Bug fixes are really not fun to play with, compared to creating functionalities. However, we must always recognize that, in time, there will be bugs. Bug fixes help close the missing gaps of the software that made it vulnerable for exploits and opportunistic unusual behaviors. Let us know if there is a bug by creating an issue in the Minesweeper GitHub repository.
 
 Creating an Issue
 =================
