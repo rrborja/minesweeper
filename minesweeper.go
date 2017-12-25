@@ -432,33 +432,6 @@ func tallyHints(game *game) {
 			}
 		}
 	}
-
-	// width := game.Width
-	// height := game.Height
-
-	// tally := func(blocks blocks, x, y int) {
-	// 	if x >= 0 && y >= 0 &&
-	// 		x < width && y < height &&
-	// 		blocks[x][y].Node != Bomb {
-	// 		blocks[x][y].Node = Number
-	// 		blocks[x][y].Value++
-	// 	}
-	// }
-
-	// for x, row := range game.blocks {
-	// 	for y, block := range row {
-	// 		if block.Node == Bomb {
-	// 			tally(game.blocks, x-1, y-1)
-	// 			tally(game.blocks, x-1, y)
-	// 			tally(game.blocks, x-1, y+1)
-	// 			tally(game.blocks, x, y-1)
-	// 			tally(game.blocks, x, y+1)
-	// 			tally(game.blocks, x+1, y-1)
-	// 			tally(game.blocks, x+1, y)
-	// 			tally(game.blocks, x+1, y+1)
-	// 		}
-	// 	}
-	// }
 }
 
 func createBoard(game *game) {
@@ -487,14 +460,10 @@ func autoRevealUnmarkedBlock(game *game, visitedBlocks *list.List, x, y int) {
 
 			visitedBlocks.PushBack(blocks[x][y])
 
-			autoRevealUnmarkedBlock(game, visitedBlocks, x-1, y-1)
-			autoRevealUnmarkedBlock(game, visitedBlocks, x-1, y)
-			autoRevealUnmarkedBlock(game, visitedBlocks, x-1, y+1)
-			autoRevealUnmarkedBlock(game, visitedBlocks, x, y-1)
-			autoRevealUnmarkedBlock(game, visitedBlocks, x, y+1)
-			autoRevealUnmarkedBlock(game, visitedBlocks, x+1, y-1)
-			autoRevealUnmarkedBlock(game, visitedBlocks, x+1, y)
-			autoRevealUnmarkedBlock(game, visitedBlocks, x+1, y+1)
+			game.traverseAdjacentCells(x, y, func(cell *Block) {
+				autoRevealUnmarkedBlock(game, visitedBlocks, cell.X(), cell.Y())
+			})
+
 		} else if blocks[x][y].Node == Number {
 			blocks[x][y].visited = true
 
