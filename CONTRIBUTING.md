@@ -34,14 +34,14 @@ Suggest a Functionality
 =======================
 Adding a functionality is not only a fun task but it is always a serious task to become involved with. As such, there will be a lot of discipline that both of us must expect. The following guidelines will help us achieve the best overall outcome:
 1. Every functionality must be coupled with test-driven development.  
-   * If the functionality is not yet existed, test cases must be created first and ensure the test fails at first. The reason behind is that when a test fails after performing a testing scenario, we determine that the functionality has not yet implemented or, better yet, the code for that functionality is not in the codebase yet. When it does fail, it is your opportunity to create that functionality in the actual codebase. The second test then must pass.
+   * If the functionality is not yet existed, test cases must be created first and ensure the test fails at first. The reason behind is that when a test fails after performing a testing scenario, we determine that the functionality has not been  implemented or, better yet, the code for that functionality is not in the codebase yet. When it does fail, it will now become your opportunity to create (a.k.a refactor) that functionality to the actual codebase. The second test then must pass.
 2. Your naming conventions must be properly aligned to this [guideline](https://golang.org/doc/effective_go.html).
 3. Your exported methods, functions, types, variables and constants must have their own Godoc-style comments. Comments should be meaningful and helpful in order to provide other contributors enough idea how your code works.
-4. Your changes must pass code vetting frameworks. The frameworks used are indicated by the top of the README.md, in this case, travis-ci, goreportcard, coveralls, etc.
-5. Continuously communicate with us what is happening during your work. It helps us know that ideas keep flowing.
+4. Your changes must pass code vetting frameworks. The frameworks used are indicated by the top of the [README.md](https://github.com/rrborja/minesweeper/blob/master/README.md), in this case, travis-ci, goreportcard, coveralls, etc.
+5. Continuously communicate with us what is happening during your work. It helps us know that ideas still keep flowing.
 
 Opening a Pull Request
 ======================
 [Fork](https://help.github.com/articles/fork-a-repo/) `rrborja/minesweeper`, commit your changes, and [open a pull request](https://github.com/rrborja/minesweeper/compare).
 
-I will be notified immediately when you submit the pull request. During this process, your submission will be reviewed and vetted with most automated code review frameworks. 
+I will be notified immediately when you have submited the pull request. During this process, your submission will be reviewed and vetted with most automated code review frameworks. We ask for your patience and you will be notified accordingly.
