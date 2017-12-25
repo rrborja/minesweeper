@@ -8,7 +8,7 @@ Remember, these are guidelines, not rules. The guidelines are set to create a "c
 
 Contributing License Agreement
 ==============================
-Before contributing and your pull requests to be accepted, we ask you to sign the [Contributing License Agreement](https://cla-assistant.io/rrborja/minesweeper) for the protection of everyone who made this project successfully grow.
+Before contributing and your pull requests to be accepted, we ask you to electronically sign the [Contributing License Agreement](https://cla-assistant.io/rrborja/minesweeper) for the protection of everyone who made this project successfully grow.
 
 For corporations who want to contribute, please email to inquiry@brute.io
 
