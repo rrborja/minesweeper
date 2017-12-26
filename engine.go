@@ -272,15 +272,13 @@ func autoRevealUnmarkedBlock(game *game, visitedBlocks *list.List, x, y int) {
 
 func (game *game) validateSolution() {
 	var visitTally int
-	iterateNotInterrupted := game.iterateBlocks(func(block *Block) bool {
-		if block.visited {
-			switch block.Node {
-			case Bomb:
-				game.Event <- Lose
-				return false
-			default:
-				visitTally++
-			}
+	iterateNotInterrupted := game.iterateVisitedBlocks(func(block *Block) bool {
+		switch block.Node {
+		case Bomb:
+			game.Event <- Lose
+			return false
+		default:
+			visitTally++
 		}
 		return true
 	})
