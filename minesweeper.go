@@ -146,9 +146,10 @@ func NewGame(grid ...Grid) (Minesweeper, Event) {
 // supplying this Grid is also optional, you may encounter an UnspecifiedGridError
 // panic when calling the Play() method if the Grid is not supplied. You may
 // explicitly supply it by calling the SetGrid(int, int) method.
-func New(grid ...Grid) (*Minesweeper, *Event) {
-	singleton, mainEvent = NewGame(grid...)
-	return &singleton, &mainEvent
+func New(grid ...Grid) Event {
+	minesweeper, mainEvent := NewGame(grid...)
+	singleton = minesweeper
+	return mainEvent
 }
 
 // SetGrid sets the board's size. You can't change the board's size once

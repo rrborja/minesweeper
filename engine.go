@@ -34,7 +34,6 @@ type game struct {
 }
 
 var singleton Minesweeper
-var mainEvent Event
 
 func (game *game) SetGrid(width, height int) error {
 	if game.Grid != nil {
@@ -155,17 +154,18 @@ func (game *game) SetDifficulty(difficulty Difficulty) error {
 }
 
 func (game *game) Play() error {
-	if game.Mutex != nil {
-		return new(GameAlreadyStartedError)
-	}
-	game.Mutex = new(sync.Mutex)
-
 	if game.Difficulty == notSet {
 		return new(UnspecifiedDifficultyError)
 	}
 	if game.Grid == nil {
 		return new(UnspecifiedGridError)
 	}
+
+	if game.Mutex != nil {
+		return new(GameAlreadyStartedError)
+	}
+	game.Mutex = new(sync.Mutex)
+
 	createBombs(game)
 	tallyHints(game)
 	return nil
