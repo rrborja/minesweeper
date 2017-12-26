@@ -27,6 +27,7 @@ The best part: this library contains 100% of all source codes written in Go.
 * [Example](#example)
 * [TODO](#todo)
 * [License](#license)
+* [GPG Verified](#gpg-verified)
 * [Contributing](#contributing)
 
 
@@ -130,7 +131,7 @@ TODO
 License
 =======
 
-This project Minesweeper API is released under the [GNU General Public License v2.0](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
+This project Minesweeper API is released under the [GNU General Public License](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html), either version 2 of the License, or (at your option) any later version.
 
 GPG Verified
 ============
