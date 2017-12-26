@@ -220,14 +220,13 @@ func createBombs(game *game) {
 }
 
 func tallyHints(game *game) {
-	game.iterateBlocksWhen(Bomb, func(block *Block) bool {
+	game.iterateBlocksWhen(Bomb, func(block *Block) {
 		game.traverseAdjacentCells(block.X(), block.Y(), func(cell *Block) {
 			if cell.Node != Bomb {
 				cell.Node = Number
 				cell.Value++
 			}
 		})
-		return true
 	})
 }
 
@@ -327,15 +326,13 @@ func (game *game) iterateBlocks(do func(*Block) bool) bool {
 
 	for x := 0; x < game.Width; x++ {
 		for y := 0; y < game.Height; y++ {
-			if success := do(&game.blocks[x][y]); !success {
-				return false
-			}
+			do(&game.blocks[x][y])
 		}
 	}
 	return true
 }
 
-func (game *game) iterateBlocksWhen(condition Node, do func(*Block) bool) bool {
+func (game *game) iterateBlocksWhen(condition Node, do func(*Block)) bool {
 	return game.iterateBlocks(func(block *Block) bool {
 		defer skipIterate()
 
