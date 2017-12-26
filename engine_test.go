@@ -879,7 +879,7 @@ func appendBomb(game *game, x, y int, bombs []*Block, nonBombs []*Block) ([]*Blo
 func count(blocks blocks, width, height, x, y int) (has int) {
 	if x >= 0 && y >= 0 &&
 		x < width && y < height &&
-		blocks[x][y].Node&Bomb == 1 {
+		blocks[x][y].Node&Bomb == Bomb {
 		return 1
 	}
 	return

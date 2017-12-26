@@ -41,7 +41,7 @@ const (
 	// Unknown is the type of the value contained in a minesweeper
 	// cell. It has no value which means no mines are neighbored in
 	// the cell.
-	Unknown Node = 1 << iota >> 1
+	Unknown Node = 1 << iota
 
 	// Bomb is the type of the value contained in a minesweeper cell.
 	// This is the equivalent of a mine in the game.
