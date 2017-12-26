@@ -323,24 +323,44 @@ func (game *game) withinBounds(x, y int, do func()) {
 	}
 }
 
-func (game *game) iterateBlocksWhen(condition Node, do func(*Block) bool) bool {
-	success := true
-mainLoop:
-	for _, row := range game.blocks {
-		for _, block := range row {
-			cell := &game.blocks[block.X()][block.Y()]
-			if cell.Node&condition > 0 {
-				if success = do(cell); !success {
-					break mainLoop
-				}
+func (game *game) iterateBlocks(do func(*Block) bool) bool {
+	defer skipIterate()
+
+	for x := 0; x < game.Width; x++ {
+		for y := 0; y < game.Height; y++ {
+			if success := do(&game.blocks[x][y]); !success {
+				return false
 			}
 		}
 	}
-	return success
+	return true
 }
 
-func (game *game) iterateBlocks(do func(*Block) bool) bool {
-	return game.iterateBlocksWhen(Unknown|Bomb|Number, do)
+func (game *game) iterateBlocksWhen(condition Node, do func(*Block) bool) bool {
+	return game.iterateBlocks(func(block *Block) bool {
+		defer skipIterate()
+
+		if block.Node&condition == condition {
+			do(block)
+		}
+		return true
+	})
+}
+
+func (game *game) iterateVisitedBlocks(do func(*Block) bool) bool {
+	return game.iterateBlocks(func(block *Block) bool {
+		defer skipIterate()
+
+		if block.visited {
+			do(block)
+		}
+		return true
+	})
+}
+
+func skipIterate() bool {
+	recover()
+	return false
 }
 
 func (game *game) area() int {
