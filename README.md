@@ -1,12 +1,12 @@
 # Minesweeper API
 
-[![GoDoc](https://godoc.org/github.com/rrborja/minesweeper-go?status.svg)](https://godoc.org/github.com/rrborja/minesweeper-go)
+[![GoDoc](https://godoc.org/github.com/rrborja/minesweeper?status.svg)](https://godoc.org/github.com/rrborja/minesweeper)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)  
-[![Build Status](https://travis-ci.org/rrborja/minesweeper-go.svg?branch=master)](https://travis-ci.org/rrborja/minesweeper-go)
+[![Build Status](https://travis-ci.org/rrborja/minesweeper.svg?branch=master)](https://travis-ci.org/rrborja/minesweeper)
 [![codecov](https://codecov.io/gh/rrborja/minesweeper/branch/master/graph/badge.svg)](https://codecov.io/gh/rrborja/minesweeper)
-[![Go Report Card](https://goreportcard.com/badge/github.com/rrborja/minesweeper-go)](https://goreportcard.com/report/github.com/rrborja/minesweeper-go)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/87ca3506f37248bc901e122ce0f57d8a)](https://www.codacy.com/app/rrborja/minesweeper-go?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=rrborja/minesweeper-go&amp;utm_campaign=Badge_Grade)
-[![Maintainability](https://api.codeclimate.com/v1/badges/023c630044d1398afc79/maintainability)](https://codeclimate.com/github/rrborja/minesweeper-go/maintainability)
+[![Go Report Card](https://goreportcard.com/badge/github.com/rrborja/minesweeper)](https://goreportcard.com/report/github.com/rrborja/minesweeper)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/87ca3506f37248bc901e122ce0f57d8a)](https://www.codacy.com/app/rrborja/minesweeper?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=rrborja/minesweeper&amp;utm_campaign=Badge_Grade)
+[![Maintainability](https://api.codeclimate.com/v1/badges/023c630044d1398afc79/maintainability)](https://codeclimate.com/github/rrborja/minesweeper/maintainability)
 
 The Minesweeper API is the Application Programming Interface of the minesweeper game. The game's logic is embedded in this API itself with zero third-party libraries involved. 
 
