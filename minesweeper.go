@@ -115,7 +115,22 @@ type Minesweeper interface {
 	Visit(int, int) ([]Block, error)
 }
 
-// NewGame Creates a new minesweeper instance. Note that this only creates the minesweeper
+// NewGame creates a separate minesweeper instance. Unlike minesweeper.New,
+// this function creates a non-singleton instance. Functions of this package
+// such as Visit will become the methods of this instance.
+func NewGame(grid ...Grid) (Minesweeper, Event) {
+	game := new(game)
+
+	if len(grid) > 0 {
+		game.SetGrid(grid[0].Width, grid[0].Height)
+	}
+
+	game.Event = make(chan eventType, 1)
+
+	return game, game.Event
+}
+
+// New creates a new minesweeper environment. Note that this only creates the minesweeper
 // instance without the necessary settings such as the game's difficulty and the
 // game's board size and calling this method will not start the game.
 //
@@ -131,21 +146,9 @@ type Minesweeper interface {
 // supplying this Grid is also optional, you may encounter an UnspecifiedGridError
 // panic when calling the Play() method if the Grid is not supplied. You may
 // explicitly supply it by calling the SetGrid(int, int) method.
-func NewGame(grid ...Grid) (Minesweeper, Event) {
-	game := new(game)
-
-	if len(grid) > 0 {
-		game.SetGrid(grid[0].Width, grid[0].Height)
-	}
-
-	game.Event = make(chan eventType, 1)
-
-	return game, game.Event
-}
-
-func New(grid ...Grid) (Minesweeper, Event) {
+func New(grid ...Grid) (*Minesweeper, *Event) {
 	singleton, mainEvent = NewGame(grid...)
-	return singleton, mainEvent
+	return &singleton, &mainEvent
 }
 
 // SetGrid sets the board's size. You can't change the board's size once
