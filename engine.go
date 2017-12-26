@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/rrborja/minesweeper-go/visited"
+	"github.com/rrborja/minesweeper/visited"
 )
 
 type eventType uint8

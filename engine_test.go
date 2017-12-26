@@ -24,7 +24,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rrborja/minesweeper-go/visited"
+	"github.com/rrborja/minesweeper/visited"
 	"github.com/stretchr/testify/assert"
 )
 

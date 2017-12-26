@@ -23,8 +23,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/rrborja/minesweeper-go/rendering"
-	"github.com/rrborja/minesweeper-go/visited"
+	"github.com/rrborja/minesweeper/rendering"
+	"github.com/rrborja/minesweeper/visited"
 	"github.com/stretchr/testify/assert"
 )
 
