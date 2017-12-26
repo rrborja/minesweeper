@@ -5,12 +5,14 @@
 [![Build Status](https://travis-ci.org/rrborja/minesweeper.svg?branch=master)](https://travis-ci.org/rrborja/minesweeper)
 [![codecov](https://codecov.io/gh/rrborja/minesweeper/branch/master/graph/badge.svg)](https://codecov.io/gh/rrborja/minesweeper)
 [![Go Report Card](https://goreportcard.com/badge/github.com/rrborja/minesweeper)](https://goreportcard.com/report/github.com/rrborja/minesweeper)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/87ca3506f37248bc901e122ce0f57d8a)](https://www.codacy.com/app/rrborja/minesweeper?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=rrborja/minesweeper&amp;utm_campaign=Badge_Grade)
-[![Maintainability](https://api.codeclimate.com/v1/badges/023c630044d1398afc79/maintainability)](https://codeclimate.com/github/rrborja/minesweeper/maintainability)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/cec50a1b138e4e7789a7ffb0e61432e4)](https://www.codacy.com/app/rrborja/minesweeper?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=rrborja/minesweeper&amp;utm_campaign=Badge_Grade)
+[![Maintainability](https://api.codeclimate.com/v1/badges/3c3d7b7aef3cec7c7ef5/maintainability)](https://codeclimate.com/github/rrborja/minesweeper/maintainability)
 
 The Minesweeper API is the Application Programming Interface of the minesweeper game. The game's logic is embedded in this API itself with zero third-party libraries involved. 
 
 Although, there is much no use of this game as a library, you may find this useful for educational purposes because it contains the implementation of the minesweeper game backed with coding vetting frameworks and test-driven development. The idea of this project is to provide you how this project integrates with DevOps, how it can be consumed with REST API, and how the code can achieve high code quality.
+
+The best part: this library contains 100% of all source codes written in Go.
 
 ---
 
@@ -129,6 +131,11 @@ License
 =======
 
 This project Minesweeper API is released under the [GNU General Public License v2.0](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
+
+GPG Verified
+============
+
+Commits are signed by verified PGPs
 
 Contributing
 ============
