@@ -220,15 +220,13 @@ func createBombs(game *game) {
 }
 
 func tallyHints(game *game) {
-	game.iterateBlocks(func(block *Block) bool {
-		if block.Node == Bomb {
-			game.traverseAdjacentCells(block.X(), block.Y(), func(cell *Block) {
-				if cell.Node != Bomb {
-					cell.Node = Number
-					cell.Value++
-				}
-			})
-		}
+	game.iterateBlocksWhen(Bomb, func(block *Block) bool {
+		game.traverseAdjacentCells(block.X(), block.Y(), func(cell *Block) {
+			if cell.Node != Bomb {
+				cell.Node = Number
+				cell.Value++
+			}
+		})
 		return true
 	})
 }
@@ -240,21 +238,23 @@ func createBoard(game *game) {
 	}
 	for x, row := range game.blocks {
 		for y := range row {
-			game.blocks[x][y].location = struct{ x, y int }{x: x, y: y}
+			block := &game.blocks[x][y]
+			block.Value = 0
+			block.Node = Unknown
+			block.location = struct{ x, y int }{x: x, y: y}
 		}
 	}
 }
 
 func autoRevealUnmarkedBlock(game *game, visitedBlocks *list.List, x, y int) {
 	blocks := game.blocks
-	width := game.Width
-	height := game.Height
 
-	if x >= 0 && y >= 0 && x < width && y < height {
+	game.withinBounds(x, y, func() {
 		if blocks[x][y].visited {
 			return
 		}
-		if blocks[x][y].Node == Unknown {
+		switch blocks[x][y].Node {
+		case Unknown:
 			blocks[x][y].visited = true
 
 			visitedBlocks.PushBack(blocks[x][y])
@@ -262,23 +262,25 @@ func autoRevealUnmarkedBlock(game *game, visitedBlocks *list.List, x, y int) {
 			game.traverseAdjacentCells(x, y, func(cell *Block) {
 				autoRevealUnmarkedBlock(game, visitedBlocks, cell.X(), cell.Y())
 			})
-
-		} else if blocks[x][y].Node == Number {
+		case Number:
 			blocks[x][y].visited = true
 
 			visitedBlocks.PushBack(blocks[x][y])
 		}
-	}
+	})
 }
 
 func (game *game) validateSolution() {
 	var visitTally int
 	iterateNotInterrupted := game.iterateBlocks(func(block *Block) bool {
-		if block.Node != Bomb && block.visited {
-			visitTally++
-		} else if block.Node == Bomb && block.visited {
-			game.Event <- Lose
-			return false
+		if block.visited {
+			switch block.Node {
+			case Bomb:
+				game.Event <- Lose
+				return false
+			default:
+				visitTally++
+			}
 		}
 		return true
 	})
@@ -308,25 +310,37 @@ func (game *game) traverseAdjacentCells(x, y int, do func(*Block)) {
 }
 
 func (game *game) recursivelyTraverseAdjacentCells(x, y int, do func(*Block)) {
+	game.withinBounds(x, y, func() {
+		do(&game.blocks[x][y])
+	})
+}
+
+func (game *game) withinBounds(x, y int, do func()) {
 	width := game.Width
 	height := game.Height
-
 	if x >= 0 && y >= 0 && x < width && y < height {
-		do(&game.blocks[x][y])
+		do()
 	}
 }
 
-func (game *game) iterateBlocks(do func(*Block) bool) bool {
+func (game *game) iterateBlocksWhen(condition Node, do func(*Block) bool) bool {
 	success := true
 mainLoop:
 	for _, row := range game.blocks {
 		for _, block := range row {
-			if success = do(&game.blocks[block.X()][block.Y()]); !success {
-				break mainLoop
+			cell := &game.blocks[block.X()][block.Y()]
+			if cell.Node&condition > 0 {
+				if success = do(cell); !success {
+					break mainLoop
+				}
 			}
 		}
 	}
 	return success
+}
+
+func (game *game) iterateBlocks(do func(*Block) bool) bool {
+	return game.iterateBlocksWhen(Unknown|Bomb|Number, do)
 }
 
 func (game *game) area() int {
