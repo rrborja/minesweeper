@@ -18,7 +18,7 @@ All contributing members become community members automatically and are expected
 
 License
 =======
-This project Minesweeper API is released under the [GNU General Public License v2.0](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
+This project Minesweeper API is released under the [GNU General Public License](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html), either version 2.0 or later versions.
 
 Report a Bug
 ============

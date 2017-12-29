@@ -1,7 +1,7 @@
 # Minesweeper API
 
 [![GoDoc](https://godoc.org/github.com/rrborja/minesweeper?status.svg)](https://godoc.org/github.com/rrborja/minesweeper)
-[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)  
+[![License: GPL v2+](https://img.shields.io/badge/License-GPL%20v2+-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)  
 [![Build Status](https://travis-ci.org/rrborja/minesweeper.svg?branch=master)](https://travis-ci.org/rrborja/minesweeper)
 [![codecov](https://codecov.io/gh/rrborja/minesweeper/branch/master/graph/badge.svg)](https://codecov.io/gh/rrborja/minesweeper)
 [![Go Report Card](https://goreportcard.com/badge/github.com/rrborja/minesweeper)](https://goreportcard.com/report/github.com/rrborja/minesweeper)
