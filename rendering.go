@@ -20,6 +20,9 @@
 package minesweeper
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/rrborja/minesweeper/rendering"
 	"github.com/rrborja/minesweeper/visited"
 )
@@ -63,6 +66,48 @@ func (game *game) History() *visited.History {
 
 func (game *game) LastAction() visited.Record {
 	return game.recordedActions.History.Record
+}
+
+func (game *game) Print() {
+	bombs := game.BombLocations()
+	hints := game.HintLocations()
+
+	star := '*'
+
+	var board = make([][]*rune, game.Width)
+	for i := range board {
+		board[i] = make([]*rune, game.Height)
+	}
+
+	for _, bomb := range bombs {
+		x := bomb.X()
+		y := bomb.Y()
+		board[x][y] = &star
+	}
+
+	for _, hint := range hints {
+		x := hint.X()
+		y := hint.Y()
+		value := rune(hint.(Block).Value + 48)
+		board[x][y] = &value
+	}
+
+	var boardLayout = make([]string, game.Width)
+	for i, row := range board {
+		cellLayout := make([]rune, (game.Height * 2))
+		for j, cell := range row {
+			switch cell {
+			case nil:
+				cellLayout[j*2] = '.'
+			default:
+				cellLayout[j*2] = *cell
+			}
+			cellLayout[j*2+1] = ' '
+		}
+		boardLayout[i] = string(cellLayout)
+	}
+
+	fmt.Println(strings.Join(boardLayout, "\n"))
 }
 
 func (game *recordedActions) add(record visited.Record) {

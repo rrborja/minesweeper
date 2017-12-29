@@ -38,3 +38,8 @@ type Tracker interface {
 	// HintLocations returns all the warning numbers in the grid
 	HintLocations() []Position
 }
+
+// Printer is used to print the game's current board
+type Printer interface {
+	Print()
+}

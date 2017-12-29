@@ -21,6 +21,9 @@ package minesweeper
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/rrborja/minesweeper/rendering"
@@ -138,4 +141,72 @@ func TestRecentPlayersMove(t *testing.T) {
 	}
 
 	assert.Equal(t, recentMove, story.LastAction())
+}
+
+func TestGamePrintBoard(t *testing.T) {
+	minesweeper, _ := NewGame(Grid{sampleGridWidth, sampleGridHeight})
+	minesweeper.SetDifficulty(Easy)
+	minesweeper.Play()
+
+	rescueStdout := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	properties := minesweeper.(rendering.Tracker)
+	bombs := properties.BombLocations()
+	hints := properties.HintLocations()
+
+	star := '*'
+
+	var board = make([][]*rune, sampleGridWidth)
+	for i := range board {
+		board[i] = make([]*rune, sampleGridHeight)
+	}
+
+	for _, bomb := range bombs {
+		x := bomb.X()
+		y := bomb.Y()
+		board[x][y] = &star
+	}
+
+	for _, hint := range hints {
+		x := hint.X()
+		y := hint.Y()
+		value := rune(hint.(Block).Value + 48)
+		board[x][y] = &value
+	}
+
+	var boardLayout = make([]string, sampleGridWidth)
+	for i, row := range board {
+		cellLayout := make([]rune, (sampleGridHeight * 2))
+		for j, cell := range row {
+			switch cell {
+			case nil:
+				cellLayout[j*2] = '.'
+			default:
+				cellLayout[j*2] = *cell
+			}
+			cellLayout[j*2+1] = ' '
+		}
+		boardLayout[i] = string(cellLayout)
+	}
+
+	fmt.Println(strings.Join(boardLayout, "\n"))
+
+	w.Close()
+	expected, _ := ioutil.ReadAll(r)
+	os.Stdout = rescueStdout
+
+	rescueStdout = os.Stdout
+	r, w, _ = os.Pipe()
+	os.Stdout = w
+
+	properties.(rendering.Printer).Print()
+
+	w.Close()
+	actual, _ := ioutil.ReadAll(r)
+	os.Stdout = rescueStdout
+
+	assert.Equal(t, string(expected), string(actual))
+
 }
