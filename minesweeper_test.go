@@ -29,7 +29,7 @@ func TestFunctionPlay(t *testing.T) {
 	SetGrid(4, 5)
 	SetDifficulty(Easy)
 	Play()
-	assert.NotEmpty(t, singleton.(*game).Mutex)
+	assert.NotNil(t, singleton.(*game).Mutex)
 }
 
 func TestFunctionFlag(t *testing.T) {
